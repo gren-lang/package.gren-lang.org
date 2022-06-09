@@ -1,3 +1,4 @@
+const http = require('http');
 const process = require('process');
 
 const Koa = require('koa');
@@ -10,7 +11,12 @@ app.use(async ctx => {
 
 const port = 3000;
 
-const server = app.listen(3000, () => {
+const server = http.createServer({ keepAlive: true }, app.callback());
+
+server.setTimeout(5000);
+server.keepAliveTimeout = 60000;
+
+server.listen(port, () => {
     console.log(`Server running on port ${port} using node ${process.version}`);
 });
 
