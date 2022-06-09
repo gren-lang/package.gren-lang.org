@@ -1,0 +1,14 @@
+{
+  "name": "package.gren-lang.org",
+  "version": "1.0.0",
+  "description": "The server powering package.gren-lang.org",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Robin Heggelund Hansen",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "koa": "^2.13.4"
+  }
+}
