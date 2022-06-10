@@ -9,6 +9,7 @@
   "author": "Robin Heggelund Hansen",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "koa": "^2.13.4"
+    "koa": "^2.13.4",
+    "sqlite3": "^5.0.8"
   }
 }

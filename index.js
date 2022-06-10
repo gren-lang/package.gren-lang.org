@@ -1,6 +1,27 @@
 const http = require('http');
 const process = require('process');
 
+const sqlite3 = require('sqlite3');
+const db = new sqlite3.Database('./db.sqlite', (err) => {
+    if (err != null) {
+        console.log('Failed to open database');
+        process.exit(1);
+    }
+
+    console.log('Opened database');
+});
+
+db.run(`
+PRAGMA busy_timeout = 2000;
+PRAGMA foreign_keys = on;
+`, (err) => {
+    if (err != null) {
+        console.log(`Failed to configure database connection: ${err}`);
+        process.exit(1);
+    }
+});
+
+
 const Koa = require('koa');
 const app = new Koa();
 
@@ -28,6 +49,15 @@ function onTerminate() {
 
     server.close(() => {
         console.log('Server stopped');
-        process.exit(0);
+
+        db.close((err) => {
+            if (err != null) {
+                console.log(`Failed to close database: ${err}`);
+            }
+
+            console.log('Closed database');
+
+            process.exit(0);
+        });
     });
 }
