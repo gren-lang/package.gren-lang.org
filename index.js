@@ -1,38 +1,14 @@
-const http = require('http');
-const process = require('process');
+import http from 'http'
+import process from 'process'
 
-const sqlite3 = require('sqlite3');
-const db = new sqlite3.Database('./db.sqlite', (err) => {
-    if (err != null) {
-        console.log('Failed to open database');
-        process.exit(1);
-    }
-
-    console.log('Opened database');
-});
-
-db.run(`
-PRAGMA busy_timeout = 2000;
-PRAGMA foreign_keys = on;
-`, (err) => {
-    if (err != null) {
-        console.log(`Failed to configure database connection: ${err}`);
-        process.exit(1);
-    }
-});
-
-
-const Koa = require('koa');
-const app = new Koa();
-
-app.use(async ctx => {
-    ctx.body = 'Hello, world';
-});
+import { db } from './src/db.js'
+import { api } from './src/api.js'
 
 
 const port = 3000;
 
-const server = http.createServer({ keepAlive: true }, app.callback());
+
+const server = http.createServer({ keepAlive: true }, api.callback());
 
 server.setTimeout(5000);
 server.keepAliveTimeout = 60000;

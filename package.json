@@ -1,5 +1,6 @@
 {
   "name": "package.gren-lang.org",
+  "type": "module",
   "version": "1.0.0",
   "description": "The server powering package.gren-lang.org",
   "main": "index.js",
