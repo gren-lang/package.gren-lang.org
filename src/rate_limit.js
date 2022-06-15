@@ -1,14 +1,7 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import * as ejs from 'ejs'
+import * as views from '#src/views'
 
 const maxTokens = 60;
 const tokenIncreaseEveryMs = 1000;
-
-const htmlView = fs.readFileSync(new URL('./view/rate_limit.ejs', import.meta.url));
-
-const htmlTemplate = ejs.compile(htmlView);
-
 
 let availableTokens = maxTokens;
 
@@ -23,18 +16,14 @@ setInterval(function() {
 export async function rateLimit(ctx, next) {
     if (availableTokens <= 0) {
         ctx.status = 429;
-        switch (ctx.accepts('html', 'json')) {
-            case 'html':
-                ctx.type = 'html';
-                ctx.body = htmlTemplate();
-                return;
-            case 'json':
-                ctx.type = 'json';
-                ctx.body = JSON.stringify({ error: 'Rate limit exceeded' });
-                return;
-            default:
-                return;
-        }
+        views.render(ctx, {
+            html: views.rateLimit,
+            json: function() {
+                return JSON.stringify({ error: 'Rate limit exceeded' });
+            }
+        });
+        
+        return;
     }
 
     availableTokens--;
