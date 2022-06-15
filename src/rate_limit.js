@@ -20,6 +20,9 @@ export async function rateLimit(ctx, next) {
             html: views.rateLimit,
             json: function() {
                 return JSON.stringify({ error: 'Rate limit exceeded' });
+            },
+            text: function() {
+                return 'Rate limit exceeded';
             }
         });
         

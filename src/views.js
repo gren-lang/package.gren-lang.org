@@ -20,7 +20,7 @@ function compileTemplate(filename) {
 }
 
 export function render(ctx, typeMap) {
-    switch (ctx.accepts('html', 'json')) {
+    switch (ctx.accepts('html', 'json', 'plain')) {
         case 'html':
             ctx.type = 'html';
             ctx.body = typeMap.html();
@@ -31,10 +31,11 @@ export function render(ctx, typeMap) {
             break;
         default:
             ctx.type = 'text';
-            ctx.body = 'Only html and json content is supported';
+            ctx.body = typeMap.text();
             break;
     }
 }
 
 export const rateLimit = compileTemplate('rate_limit');
+export const notFound = compileTemplate('not_found');
 
