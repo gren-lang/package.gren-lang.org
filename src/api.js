@@ -1,11 +1,14 @@
 import Koa from 'koa'
 
 import { rateLimit } from '#src/rate_limit'
+import { router as packageRouter } from '#src/package'
 import * as views from '#src/views'
 
 export const api = new Koa();
 
 api.use(rateLimit);
+
+api.use(packageRouter.routes());
 
 // 404 handling, must be last
 api.use(async (ctx, next) => {
