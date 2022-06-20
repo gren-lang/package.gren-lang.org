@@ -15,15 +15,46 @@ const db = new sqlite3.Database(dbPath, (err) => {
     log.info(`Opened database ${dbPath}`);
 });
 
-db.run(`
+
+async function initDb() {
+    try {
+        await run(`
 PRAGMA busy_timeout = 2000;
 PRAGMA foreign_keys = on;
-`, (err) => {
-    if (err != null) {
-        log.error(`Failed to configure database connection: ${err}`);
+`);
+
+        await run(`
+CREATE TABLE IF NOT EXISTS package_import_jobs (
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    version TEXT NOT NULL,
+    in_progress INT NOT NULL,
+    retry INT NOT NULL,
+    process_after_timestamp INT NOT NULL,
+    message TEXT NOT NULL,
+    PRIMARY KEY(name, version)
+) WITHOUT ROWID, STRICT;
+`);
+    } catch (err) {
+        log.error(`Failed to initialize database ${dbPath} with error ${err}`);
         process.exit(1);
     }
-});
+}
+
+initDb();
+
+
+export function run(stmt) {
+    return new Promise((resolve, reject) => {
+        db.run(stmt, (err) => {
+            if (err != null) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
 
 
 export function close(cb) {
