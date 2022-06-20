@@ -3,7 +3,7 @@ import sqlite3 from 'sqlite3'
 
 import * as log from '#src/log'
 
-export const db = new sqlite3.Database('./db.sqlite', (err) => {
+const db = new sqlite3.Database('./db.sqlite', (err) => {
     if (err != null) {
         log.error('Failed to open database');
         process.exit(1);
@@ -21,3 +21,7 @@ PRAGMA foreign_keys = on;
         process.exit(1);
     }
 });
+
+export function close(cb) {
+    db.close(cb);
+}

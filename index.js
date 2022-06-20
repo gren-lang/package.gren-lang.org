@@ -1,7 +1,7 @@
 import http from 'http'
 import process from 'process'
 
-import { db } from '#src/db'
+import * as db from '#src/db'
 import { api } from '#src/api'
 import * as log from '#src/log'
 
