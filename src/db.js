@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
     version TEXT NOT NULL,
     in_progress INT NOT NULL,
     retry INT NOT NULL,
-    process_after_timestamp INT NOT NULL,
+    process_after TEXT NOT NULL,
     message TEXT NOT NULL,
     PRIMARY KEY(name, version)
 ) WITHOUT ROWID, STRICT;
@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
 initDb();
 
 
-export function run(stmt) {
+export function run(stmt, params) {
     return new Promise((resolve, reject) => {
-        db.run(stmt, (err) => {
+        db.run(stmt, params, (err) => {
             if (err != null) {
                 reject(err);
             } else {
@@ -56,6 +56,17 @@ export function run(stmt) {
     });
 }
 
+export function query(stmt, params) {
+    return new Promise((resolve, reject) => {
+        db.all(stmt, params, (err, rows) => {
+            if (err != null) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+}
 
 export function close(cb) {
     db.close(cb);
