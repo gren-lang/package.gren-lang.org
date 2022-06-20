@@ -3,13 +3,16 @@ import sqlite3 from 'sqlite3'
 
 import * as log from '#src/log'
 
-const db = new sqlite3.Database('./db.sqlite', (err) => {
+const dbPathEnvKey = 'GREN_PACKAGES_DATABASE';
+const dbPath = process.env[dbPathEnvKey] ? process.env[dbPathEnvKey] : ':memory:';
+
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err != null) {
-        log.error('Failed to open database');
+        log.error(`Failed to open database ${dbPath} with error: ${err}`);
         process.exit(1);
     }
 
-    log.info('Opened database');
+    log.info(`Opened database ${dbPath}`);
 });
 
 db.run(`
@@ -21,6 +24,7 @@ PRAGMA foreign_keys = on;
         process.exit(1);
     }
 });
+
 
 export function close(cb) {
     db.close(cb);
