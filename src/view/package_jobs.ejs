@@ -1,0 +1,20 @@
+<%- include('/header.ejs', { refresh: 5 }) -%>
+    <h1>Package import jobs</h1>
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Retried</th>
+            <th>Message</th>
+        </tr>
+        <%_ jobs.forEach(function(job) { -%>
+        <tr>
+            <td><%= job.name %></td>
+            <td><%= job.version %></td>
+            <td><%= job.retry %></td>
+            <td><%= job.message %></td>
+        </tr>
+        <%_ }); -%>
+    </table>
+<%- include('/footer.ejs') -%>

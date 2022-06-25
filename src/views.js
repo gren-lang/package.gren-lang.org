@@ -36,6 +36,7 @@ export function render(ctx, typeMap) {
     }
 }
 
+export const packageJobs = compileTemplate('package_jobs');
 export const rateLimit = compileTemplate('rate_limit');
 export const notFound = compileTemplate('not_found');
 

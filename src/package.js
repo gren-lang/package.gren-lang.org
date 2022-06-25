@@ -5,6 +5,7 @@ import * as util from 'util'
 
 import * as log from '#src/log'
 import * as db from '#src/db'
+import * as views from '#src/views'
 
 
 export const router = new Router();
@@ -16,7 +17,11 @@ router.get('/package/jobs', async (ctx, next) => {
     try {
         const rows = await db.query("SELECT * FROM package_import_jobs", {});
 
-        log.info(rows);
+        views.render(ctx, {
+            html: () => views.packageJobs({ jobs: rows }),
+            json: () => JSON.stringify(rows),
+            text: () => `${rows.length} jobs`
+        });
     } catch (err) {
         log.error(err);
         ctx.throw(500);
