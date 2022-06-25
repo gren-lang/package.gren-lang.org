@@ -54,12 +54,12 @@ INSERT INTO package_import_jobs (
     $message: 'Initializing'
 });
 
-        ctx.status = 201;
+        ctx.status = 303;
+        ctx.redirect('/package/jobs');
     } catch (error) {
         // 19: SQLITE_CONSTRAINT, means row already exists
         if (error.errno === 19) {
-            log.info('Import already in progress');
-            ctx.throw(400);
+            ctx.throw(409);
         } else {
             log.error(error);
             ctx.throw(500);
