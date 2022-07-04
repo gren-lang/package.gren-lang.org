@@ -25,6 +25,7 @@ PRAGMA foreign_keys = on;
 
         await run(`
 CREATE TABLE IF NOT EXISTS package_import_jobs (
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     version TEXT NOT NULL,
@@ -32,8 +33,8 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
     retry INT NOT NULL,
     process_after TEXT NOT NULL,
     message TEXT NOT NULL,
-    PRIMARY KEY(name, version)
-) WITHOUT ROWID, STRICT;
+    UNIQUE(name, version)
+) STRICT;
 `);
     } catch (err) {
         log.error(`Failed to initialize database ${dbPath} with error ${err}`);

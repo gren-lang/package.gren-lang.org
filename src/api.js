@@ -17,7 +17,7 @@ api.use(async (ctx, next) => {
         views.render(ctx, {
             html: views.notFound,
             json: function() {
-                return JSON.stringify({ error: 'Not found' });
+                return JSON.stringify({ error: 'Not found' }, null, 4);
             },
             text: function() {
                 return 'Not found';
