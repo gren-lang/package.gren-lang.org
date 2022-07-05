@@ -23,7 +23,7 @@ router.get('/package/jobs', async (ctx, next) => {
             text: () => `${rows.length} jobs`
         });
     } catch (err) {
-        log.error(err);
+        log.error('Failed to get all import jobs', err);
         ctx.throw(500);
     }
 });
@@ -36,6 +36,8 @@ router.post('/package/:name/sync', async (ctx, next) => {
     try {
         await registerJob(packageName, githubUrl, '*');
 
+        log.info(`Begin import of ${packageName}`);
+
         ctx.status = 303;
         ctx.redirect('/package/jobs');
     } catch (error) {
@@ -43,7 +45,7 @@ router.post('/package/:name/sync', async (ctx, next) => {
         if (error.errno === 19) {
             ctx.throw(409);
         } else {
-            log.error(error);
+            log.error('Failed to save initial package import job.', error);
             ctx.throw(500);
         }
     }
@@ -100,7 +102,7 @@ UPDATE package_import_jobs
 SET 
     in_progress = FALSE,
     message = $reason,
-    process_after = datetime('now', '5 seconds')
+    process_after = datetime()
 WHERE
     id = $id
 `, {
@@ -109,13 +111,25 @@ WHERE
 });
 }
 
+async function cleanup() {
+    const changes = await db.run(`
+DELETE FROM package_import_jobs 
+WHERE in_progress = FALSE
+AND process_after < datetime('now', '-1 minute')
+`, {});
+
+    if (changes > 0) {
+        log.info(`Deleted ${changes} stale package jobs.`);
+    }
+}
+
 // Scheduled job
 
 async function scheduledJob() {
     try {
         await whenScheduled();
-    } catch (e) {
-        log.error(`Error when running scheduled jobs: ${e}`);
+    } catch (err) {
+        log.error(`Error when running scheduled jobs.`, err);
     }
     
     setTimeout(scheduledJob, 5000);
@@ -133,7 +147,7 @@ async function performJob(job) {
     if (job.version === '*') {
         await findMissingVersions(job);
     } else {
-        log.error(`Don't know what to do with this job: ${job}`);
+        log.error(`Don't know what to do with this job.`, job);
         await stopJob(job.id, 'Don\'t know what to do...');
     }
 }
@@ -161,7 +175,7 @@ async function findMissingVersions(job) {
                 if (error.errno === 19) {
                     // ignore
                 } else {
-                    log.error(error);
+                    log.error('Unknown error when trying to register package import job.', error);
                 }
             }
         }
@@ -171,10 +185,13 @@ async function findMissingVersions(job) {
         if (error.code === 128) {
             await stopJob(job.id, `Repository doesn\'t exist: ${githubUrl}`);
         } else {
-            log.error(error);
+            log.error('Unknown error when finding tags for remote git repo', error);
         }
     }
 }
 
 setTimeout(scheduledJob, 5000);
 
+// Cleanup
+
+setInterval(cleanup, 5000);
