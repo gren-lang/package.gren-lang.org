@@ -47,11 +47,11 @@ initDb();
 
 export function run(stmt, params) {
     return new Promise((resolve, reject) => {
-        db.run(stmt, params, (err) => {
+        db.run(stmt, params, function(err) {
             if (err != null) {
                 reject(err);
             } else {
-                resolve();
+                resolve(this.changes);
             }
         });
     });
