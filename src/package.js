@@ -63,10 +63,11 @@ SELECT * FROM package_import_jobs
 `, {});
 }
 
-function getJobs() {
+function getInProgressJobs() {
     return db.query(`
 SELECT * FROM package_import_jobs
 WHERE in_progress = TRUE
+AND process_after < datetime()
 `, {});
 }
 
@@ -93,6 +94,36 @@ INSERT INTO package_import_jobs (
     $name: name,
     $url: url,
     $version: version
+});
+}
+
+const retryTimeIncreaseInSeconds = [
+    5,
+    15,
+    60,
+    300,
+    600
+];
+
+function scheduleJobForRetry(id, numberOfTimesRetried, reason) {
+    const nextTimeIncrease = retryTimeIncreaseInSeconds[numberOfTimesRetried];
+
+    if (!nextTimeIncrease) {
+        return stopJob(id, 'Still failing after several retries');
+    }
+    
+    return db.run(`
+UPDATE package_import_jobs
+SET 
+    message = $reason,
+    retry = retry + 1,
+    process_after = datetime('now', $nextTimeIncrease)
+WHERE
+    id = $id
+`, {
+    $id: id,
+    $reason: `${reason}, will retry`,
+    $nextTimeIncrease: `${nextTimeIncrease} seconds`
 });
 }
 
@@ -136,7 +167,7 @@ async function scheduledJob() {
 }
 
 async function whenScheduled() {
-    const jobs = await getJobs();
+    const jobs = await getInProgressJobs();
     
     for (let job of jobs) {
         await performJob(job);
@@ -148,7 +179,7 @@ async function performJob(job) {
         await findMissingVersions(job);
     } else {
         log.error(`Don't know what to do with this job.`, job);
-        await stopJob(job.id, 'Don\'t know what to do...');
+        await scheduleJobForRetry(job.id, job.retry, 'Don\'t know what to do...');
     }
 }
 
@@ -167,6 +198,8 @@ async function findMissingVersions(job) {
             .map(([hash, tag]) => tag.replace('refs/tags/', ''))
             .filter((tag) => semver.valid(tag));
 
+        log.info(`Registering jobs for importing new versions of ${job.name}`, entries);
+
         for (let tag of entries) {
             try {
                 await registerJob(job.name, job.url, tag);
@@ -175,7 +208,10 @@ async function findMissingVersions(job) {
                 if (error.errno === 19) {
                     // ignore
                 } else {
-                    log.error('Unknown error when trying to register package import job.', error);
+                    log.error(
+                        'Unknown error when trying to register import job for ${job.name} version ${tag}.', 
+                        error
+                    );
                 }
             }
         }
@@ -186,6 +222,11 @@ async function findMissingVersions(job) {
             await stopJob(job.id, `Repository doesn\'t exist: ${githubUrl}`);
         } else {
             log.error('Unknown error when finding tags for remote git repo', error);
+            await scheduleJobForRetry(
+                job.id,
+                job.retry,
+                'Unknown error when finding tags for git repo.'
+            );
         }
     }
 }
