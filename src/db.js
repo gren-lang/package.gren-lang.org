@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     version TEXT NOT NULL,
+    step TEXT NOT NULL,
     in_progress INT NOT NULL,
     retry INT NOT NULL,
     process_after TEXT NOT NULL,
@@ -64,6 +65,18 @@ export function query(stmt, params) {
                 reject(err);
             } else {
                 resolve(rows);
+            }
+        });
+    });
+}
+
+export function queryOne(stmt, params) {
+    return new Promise((resolve, reject) => {
+        db.get(stmt, params, (err, row) => {
+            if (err != null) {
+                reject(err);
+            } else {
+                resolve(row);
             }
         });
     });

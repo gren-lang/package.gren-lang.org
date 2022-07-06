@@ -34,7 +34,7 @@ router.post('/package/:name/sync', async (ctx, next) => {
     const githubUrl = githubUrlForName(packageName);
 
     try {
-        await registerJob(packageName, githubUrl, '*');
+        await registerJob(packageName, githubUrl, '*', stepFindMissingVersions);
 
         log.info(`Begin import of ${packageName}`);
 
@@ -63,20 +63,29 @@ SELECT * FROM package_import_jobs
 `, {});
 }
 
-function getInProgressJobs() {
-    return db.query(`
+function getInProgressJob() {
+    return db.queryOne(`
 SELECT * FROM package_import_jobs
 WHERE in_progress = TRUE
 AND process_after < datetime()
+ORDER BY process_after
+LIMIT 1
 `, {});
 }
 
-function registerJob(name, url, version) {
+const stepFindMissingVersions = 'FIND_MISSING_VERSIONS';
+const stepCloneRepo = 'CLONE_REPO';
+const stepCheckCompatibility = 'CHECK_COMPATIBILITY';
+const stepBuildDocs = 'BUILD_DOCS';
+const stepCleanup = 'CLEANUP';
+
+function registerJob(name, url, version, step) {
     return db.run(`
 INSERT INTO package_import_jobs (
     name,
     url,
     version,
+    step,
     in_progress,
     retry,
     process_after,
@@ -85,15 +94,17 @@ INSERT INTO package_import_jobs (
     $name,
     $url,
     $version,
+    $step,
     TRUE,
     0,
     datetime(),
-    'Initializing'
+    'Waiting to execute'
 )
 `, {
     $name: name,
     $url: url,
-    $version: version
+    $version: version,
+    $step: step
 });
 }
 
@@ -160,26 +171,29 @@ async function scheduledJob() {
     try {
         await whenScheduled();
     } catch (err) {
-        log.error(`Error when running scheduled jobs.`, err);
+        log.error(`Error when running scheduled job.`, err);
     }
     
-    setTimeout(scheduledJob, 5000);
+    setTimeout(scheduledJob, 1000);
 }
 
 async function whenScheduled() {
-    const jobs = await getInProgressJobs();
+    const job = await getInProgressJob();
     
-    for (let job of jobs) {
+    if (job) {
         await performJob(job);
     }
 }
 
 async function performJob(job) {
-    if (job.version === '*') {
-        await findMissingVersions(job);
-    } else {
-        log.error(`Don't know what to do with this job.`, job);
-        await scheduleJobForRetry(job.id, job.retry, 'Don\'t know what to do...');
+    switch (job.step) {
+        case stepFindMissingVersions:
+            await findMissingVersions(job);
+            break;
+        default:
+            log.error(`Don't know what to do with job at step ${job.step}`, job); 
+            await stopJob(job.id, 'Don\'t know what to do...');
+            break;
     }
 }
 
@@ -202,7 +216,7 @@ async function findMissingVersions(job) {
 
         for (let tag of entries) {
             try {
-                await registerJob(job.name, job.url, tag);
+                await registerJob(job.name, job.url, tag, stepCloneRepo);
             } catch (error) {
                 // 19: SQLITE_CONSTRAINT, means row already exists
                 if (error.errno === 19) {
@@ -231,7 +245,7 @@ async function findMissingVersions(job) {
     }
 }
 
-setTimeout(scheduledJob, 5000);
+scheduledJob();
 
 // Cleanup
 
