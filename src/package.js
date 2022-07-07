@@ -2,6 +2,9 @@ import Router from '@koa/router'
 import * as childProcess from 'child_process'
 import { default as semver } from 'semver'
 import * as util from 'util'
+import { xdgCache } from 'xdg-basedir'
+import * as path from 'path'
+import * as fs from 'fs/promises'
 
 import * as log from '#src/log'
 import * as db from '#src/db'
@@ -138,6 +141,22 @@ WHERE
 });
 }
 
+function advanceJob(id, nextStep) {
+    return db.run(`
+UPDATE package_import_jobs
+SET 
+    step = $nextStep,
+    retry = 0,
+    process_after = datetime(),
+    message = 'Waiting to execute'
+WHERE
+    id = $id
+`, {
+    $id: id,
+    $nextStep: nextStep
+});
+}
+
 function stopJob(id, reason) {
     return db.run(`
 UPDATE package_import_jobs
@@ -181,6 +200,7 @@ async function whenScheduled() {
     const job = await getInProgressJob();
     
     if (job) {
+        log.info('Executing job', job);
         await performJob(job);
     }
 }
@@ -189,6 +209,9 @@ async function performJob(job) {
     switch (job.step) {
         case stepFindMissingVersions:
             await findMissingVersions(job);
+            break;
+        case stepCloneRepo:
+            await cloneRepo(job);
             break;
         default:
             log.error(`Don't know what to do with job at step ${job.step}`, job); 
@@ -199,9 +222,7 @@ async function performJob(job) {
 
 async function findMissingVersions(job) {
     try {
-        const githubUrl = githubUrlForName(job.name);
-        
-        const { stdout } = await execFile('git', [ 'ls-remote', '--tags', githubUrl ], {
+        const { stdout } = await execFile('git', [ 'ls-remote', '--tags', job.url ], {
             timeout: 3000
         });
 
@@ -245,7 +266,29 @@ async function findMissingVersions(job) {
     }
 }
 
-scheduledJob();
+async function cloneRepo(job) {
+    try {
+        const localRepoPath = path.join(xdgCache, 'gren_packages', job.id.toString());
+
+        await fs.mkdir(localRepoPath, { recursive: true });
+        await execFile('git', [ 'clone', '--branch', job.version, '--depth', '1', job.url, localRepoPath ], {
+            timeout: 10_000
+        });
+
+        log.info(`Successfully cloned repo for package ${job.name} at version ${job.version}`, job);
+
+        await advanceJob(job.id, stepCheckCompatibility);
+    } catch (error) {
+        log.error('Unknown error when cloning remote git repo', error);
+        await scheduleJobForRetry(
+            job.id,
+            job.retry,
+            'Unknown error when cloning git repo.'
+        );
+    }
+}
+
+setTimeout(scheduledJob, 5000);
 
 // Cleanup
 

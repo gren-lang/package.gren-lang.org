@@ -4,6 +4,10 @@ export function info(msg, data) {
 
 export function error(msg, data) {
     console.error(decorate('ERROR', msg, data));
+
+    if (data instanceof Error) {
+        console.error(data.stack);
+    }
 }
 
 function decorate(level, msg, data) {

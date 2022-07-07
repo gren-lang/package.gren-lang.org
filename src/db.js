@@ -6,6 +6,8 @@ import * as log from '#src/log'
 const dbPathEnvKey = 'GREN_PACKAGES_DATABASE';
 const dbPath = process.env[dbPathEnvKey] ? process.env[dbPathEnvKey] : ':memory:';
 
+sqlite3.verbose();
+
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err != null) {
         log.error(`Failed to open database ${dbPath} with error: ${err}`);
