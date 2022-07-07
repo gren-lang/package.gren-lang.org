@@ -254,7 +254,7 @@ async function findMissingVersions(job) {
         await stopJob(job.id, 'Completed successfully');
     } catch (error) {
         if (error.code === 128) {
-            await stopJob(job.id, `Repository doesn\'t exist: ${githubUrl}`);
+            await stopJob(job.id, `Repository doesn\'t exist: ${job.url}`);
         } else {
             log.error('Unknown error when finding tags for remote git repo', error);
             await scheduleJobForRetry(
