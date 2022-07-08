@@ -5,6 +5,7 @@ import * as util from 'util'
 import { xdgCache } from 'xdg-basedir'
 import * as path from 'path'
 import * as fs from 'fs/promises'
+import * as gren from 'gren-compiler-library'
 
 import * as log from '#src/log'
 import * as db from '#src/db'
@@ -213,6 +214,9 @@ async function performJob(job) {
         case stepCloneRepo:
             await cloneRepo(job);
             break;
+        case stepBuildDocs:
+            await buildDocs(job);
+            break;
         default:
             log.error(`Don't know what to do with job at step ${job.step}`, job); 
             await stopJob(job.id, 'Don\'t know what to do...');
@@ -268,9 +272,10 @@ async function findMissingVersions(job) {
 
 async function cloneRepo(job) {
     try {
-        const localRepoPath = path.join(xdgCache, 'gren_packages', job.id.toString());
+        const localRepoPath = getLocalRepoPath(job);
 
         await fs.mkdir(localRepoPath, { recursive: true });
+        
         await execFile('git', [ 'clone', '--branch', job.version, '--depth', '1', job.url, localRepoPath ], {
             timeout: 10_000
         });
@@ -288,8 +293,44 @@ async function cloneRepo(job) {
     }
 }
 
-setTimeout(scheduledJob, 5000);
+function getLocalRepoPath(job) {
+    return path.join(xdgCache, 'gren_packages', job.id.toString());
+}
 
-// Cleanup
+async function buildDocs(job) {
+    try {
+        await gren.downloadCompiler();
+        
+        const compilerPath = gren.compilerPath;
+        const compilerArgs = [
+            'make',
+            '--docs=./docs.json',
+        ];
+
+        const localRepoPath = getLocalRepoPath(job);
+        
+        await execFile(compilerPath, compilerArgs, {
+            cwd: localRepoPath,
+            env: { 
+                ...process.env, 
+                'GREN_HOME': path.join(localRepoPath, '.gren', 'home')
+            },
+            timeout: 15_000
+        });
+
+        log.info(`Successfully compiled package ${job.name} at version ${job.version}`, job);
+
+        await advanceJob(job.id, stepCleanup);
+    } catch (error) {
+        log.error('Unknown error when compiling project', error);
+        await scheduleJobForRetry(
+            job.id,
+            job.retry,
+            'Unknown error when compiling project.'
+        );
+    }
+}
+
+setTimeout(scheduledJob, 5000);
 
 setInterval(cleanup, 5000);
