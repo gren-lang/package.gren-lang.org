@@ -123,7 +123,7 @@ function scheduleJobForRetry(id, numberOfTimesRetried, reason) {
     const nextTimeIncrease = retryTimeIncreaseInSeconds[numberOfTimesRetried];
 
     if (!nextTimeIncrease) {
-        return stopJob(id, 'Still failing after several retries');
+        return advanceJob(id, stepCleanup);
     }
     
     return db.run(`
@@ -215,6 +215,9 @@ async function performJob(job) {
             break;
         case stepBuildDocs:
             await buildDocs(job);
+            break;
+        case stepCleanup:
+            await removeJobWorkingDir(job);
             break;
         default:
             log.error(`Don't know what to do with job at step ${job.step}`, job); 
@@ -349,6 +352,25 @@ async function buildDocs(job) {
                 'Unknown error when compiling project.'
             );
         }
+    }
+}
+
+async function removeJobWorkingDir(job) {
+    try {
+        const localRepoPath = getLocalRepoPath(job);
+
+        await fs.rmdir(localRepoPath, { recursive: true });
+        
+        log.info(`Successfully cleaned workspace for package ${job.name} at version ${job.version}`, job);
+
+        await stopJob(job.id, 'Import complete');
+    } catch (error) {
+        log.error('Unknown error when trying to cleanup after import.', error);
+        await scheduleJobForRetry(
+            job.id,
+            job.retry,
+            'Unknown error when trying to cleanup after import.'
+        );
     }
 }
 
