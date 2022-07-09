@@ -79,7 +79,6 @@ LIMIT 1
 
 const stepFindMissingVersions = 'FIND_MISSING_VERSIONS';
 const stepCloneRepo = 'CLONE_REPO';
-const stepCheckCompatibility = 'CHECK_COMPATIBILITY';
 const stepBuildDocs = 'BUILD_DOCS';
 const stepCleanup = 'CLEANUP';
 
@@ -282,7 +281,7 @@ async function cloneRepo(job) {
 
         log.info(`Successfully cloned repo for package ${job.name} at version ${job.version}`, job);
 
-        await advanceJob(job.id, stepCheckCompatibility);
+        await advanceJob(job.id, stepBuildDocs);
     } catch (error) {
         log.error('Unknown error when cloning remote git repo', error);
         await scheduleJobForRetry(
@@ -299,12 +298,11 @@ function getLocalRepoPath(job) {
 
 async function buildDocs(job) {
     try {
-        await gren.downloadCompiler();
-        
         const compilerPath = gren.compilerPath;
         const compilerArgs = [
             'make',
             '--docs=./docs.json',
+            '--report=json'
         ];
 
         const localRepoPath = getLocalRepoPath(job);
@@ -315,19 +313,42 @@ async function buildDocs(job) {
                 ...process.env, 
                 'GREN_HOME': path.join(localRepoPath, '.gren', 'home')
             },
-            timeout: 15_000
+            timeout: 30_000
         });
 
         log.info(`Successfully compiled package ${job.name} at version ${job.version}`, job);
 
         await advanceJob(job.id, stepCleanup);
     } catch (error) {
-        log.error('Unknown error when compiling project', error);
-        await scheduleJobForRetry(
-            job.id,
-            job.retry,
-            'Unknown error when compiling project.'
-        );
+        let compilerError;
+        try {
+            compilerError = JSON.parse(error.stderr);
+        } catch (parseError) {
+            compilerError = error;
+        }
+
+        if (compilerError.title === 'NO gren.json FILE') {
+            log.error('Package doesn\'t contain gren.json file', compilerError);
+            await scheduleJobForRetry(
+                job.id,
+                job.retry,
+                'Package doesn\'t contain gren.json file'
+            );
+        } else if (compilerError.title === 'GREN VERSION MISMATCH') {
+            log.error('Package does not support current Gren compiler', compilerError);
+            await scheduleJobForRetry(
+                job.id,
+                job.retry,
+                'Package doesn\'t support current Gren compiler.'
+            );
+        } else {
+            log.error('Unknown error when compiling project', compilerError);
+            await scheduleJobForRetry(
+                job.id,
+                job.retry,
+                'Unknown error when compiling project.'
+            );
+        }
     }
 }
 
