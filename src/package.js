@@ -383,7 +383,7 @@ async function removeJobWorkingDir(job) {
     try {
         const localRepoPath = getLocalRepoPath(job);
 
-        await fs.rmdir(localRepoPath, { recursive: true });
+        await fs.rm(localRepoPath, { recursive: true });
         
         log.info(`Successfully cleaned workspace for package ${job.name} at version ${job.version}`, job);
 
