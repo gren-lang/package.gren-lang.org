@@ -39,6 +39,17 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
     UNIQUE(name, version)
 ) STRICT;
 `);
+        
+        await run(`
+CREATE TABLE IF NOT EXISTS package_docs (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    version TEXT NOT NULL,
+    docs TEXT NOT NULL,
+    UNIQUE(name, version)
+) STRICT;
+`);
     } catch (err) {
         log.error(`Failed to initialize database ${dbPath} with error ${err}`);
         process.exit(1);

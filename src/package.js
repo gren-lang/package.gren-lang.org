@@ -184,6 +184,26 @@ AND process_after < datetime('now', '-1 minute')
     }
 }
 
+function registerDocs(name, url, version, docs) {
+    return db.run(`
+INSERT INTO package_docs (
+    name,
+    url,
+    version,
+    docs
+) VALUES (
+    $name,
+    $url,
+    $version,
+    $docs
+)
+`, {
+    $name: name,
+    $url: url,
+    $version: version,
+    $docs: docs
+});
+}
 // Scheduled job
 
 async function scheduledJob() {
@@ -318,6 +338,10 @@ async function buildDocs(job) {
             },
             timeout: 30_000
         });
+
+        const docs = await fs.readFile(path.join(localRepoPath, 'docs.json'), { encoding: 'utf-8' });
+
+        await registerDocs(job.name, job.url, job.version, docs);
 
         log.info(`Successfully compiled package ${job.name} at version ${job.version}`, job);
 
