@@ -44,8 +44,10 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
 CREATE TABLE IF NOT EXISTS packages (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
-    url TEXT NOT NULL,
     version TEXT NOT NULL,
+    url TEXT NOT NULL,
+    imported TEXT NOT NULL,
+    metadata TEXT NOT NULL,
     readme TEXT NOT NULL,
     docs TEXT NOT NULL,
     UNIQUE(name, version)

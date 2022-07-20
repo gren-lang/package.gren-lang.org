@@ -185,18 +185,22 @@ AND process_after < datetime('now', '-1 minute')
     }
 }
 
-function registerDocs(name, url, version, readme, docs) {
+function registerDocs(name, url, version, metadata, readme, docs) {
     return db.run(`
 INSERT INTO packages (
     name,
-    url,
     version,
+    url,
+    imported,
+    metadata,
     readme,
     docs
 ) VALUES (
     $name,
-    $url,
     $version,
+    $url,
+    datetime(),
+    $metadata,
     $readme,
     $docs
 )
@@ -204,6 +208,7 @@ INSERT INTO packages (
     $name: name,
     $url: url,
     $version: version,
+    $metadata: metadata,
     $readme: readme,
     $docs: docs
 });
@@ -361,10 +366,11 @@ async function buildDocs(job) {
             timeout: 30_000
         });
 
+        const metadata = await fs.readFile(path.join(localRepoPath, 'gren.json'), { encoding: 'utf-8' });
         const readme = await fs.readFile(path.join(localRepoPath, 'README.md'), { encoding: 'utf-8' });
         const docs = await fs.readFile(path.join(localRepoPath, 'docs.json'), { encoding: 'utf-8' });
 
-        await registerDocs(job.name, job.url, job.version, readme, docs);
+        await registerDocs(job.name, job.url, job.version, metadata, readme, docs);
 
         log.info(`Successfully compiled package ${job.name} at version ${job.version}`, job);
 
