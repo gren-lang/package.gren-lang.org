@@ -299,7 +299,7 @@ async function cloneRepo(job) {
     try {
         const localRepoPath = getLocalRepoPath(job);
 
-        await fs.rm(localRepoPath, { recursive: true });
+        await fs.rm(localRepoPath, { force: true, recursive: true });
         await fs.mkdir(localRepoPath, { recursive: true });
         
         await execFile('git', [ 'clone', '--branch', job.version, '--depth', '1', job.url, localRepoPath ], {
@@ -352,6 +352,13 @@ async function buildDocs(job) {
 
         await advanceJob(job.id, stepCleanup);
     } catch (error) {
+        // 19: SQLITE_CONSTRAINT, means row already exists
+        if (error.errno === 19) {
+            log.info(`Package ${job.name} at version ${job.version} already exist in our system`, job);
+            await advanceJob(job.id, stepCleanup);
+            return;
+        }
+        
         let compilerError;
         try {
             compilerError = JSON.parse(error.stderr);
