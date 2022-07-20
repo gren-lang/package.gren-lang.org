@@ -69,7 +69,8 @@ SELECT * FROM package_import_jobs
 
 function getInProgressJob() {
     return db.queryOne(`
-SELECT * FROM package_import_jobs
+SELECT *
+FROM package_import_jobs
 WHERE in_progress = TRUE
 AND process_after < datetime()
 ORDER BY process_after
@@ -207,6 +208,17 @@ INSERT INTO packages (
     $docs: docs
 });
 }
+
+function existingVersions(name) {
+    return db.query(`
+SELECT version
+FROM packages
+WHERE name = $name
+`, {
+    $name: name,
+});
+}
+
 // Scheduled job
 
 async function scheduledJob() {
@@ -255,12 +267,18 @@ async function findMissingVersions(job) {
             timeout: 3000
         });
 
+        const alreadyImportedVersionRows = await existingVersions(job.name);
+        
+        const alreadyImportedVersions =
+            alreadyImportedVersionRows.map((row) => row.version);
+
         const entries = stdout
             .trim()
             .split('\n')
             .map((entry) => entry.split('\t'))
             .map(([hash, tag]) => tag.replace('refs/tags/', ''))
-            .filter((tag) => semver.valid(tag));
+            .filter((tag) => semver.valid(tag))
+            .filter((tag) => !alreadyImportedVersions.includes(tag));
 
         log.info(`Registering jobs for importing new versions of ${job.name}`, entries);
 
