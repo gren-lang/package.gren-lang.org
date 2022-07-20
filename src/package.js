@@ -184,23 +184,26 @@ AND process_after < datetime('now', '-1 minute')
     }
 }
 
-function registerDocs(name, url, version, docs) {
+function registerDocs(name, url, version, readme, docs) {
     return db.run(`
-INSERT INTO package_docs (
+INSERT INTO packages (
     name,
     url,
     version,
+    readme,
     docs
 ) VALUES (
     $name,
     $url,
     $version,
+    $readme,
     $docs
 )
 `, {
     $name: name,
     $url: url,
     $version: version,
+    $readme: readme,
     $docs: docs
 });
 }
@@ -339,9 +342,10 @@ async function buildDocs(job) {
             timeout: 30_000
         });
 
+        const readme = await fs.readFile(path.join(localRepoPath, 'README.md'), { encoding: 'utf-8' });
         const docs = await fs.readFile(path.join(localRepoPath, 'docs.json'), { encoding: 'utf-8' });
 
-        await registerDocs(job.name, job.url, job.version, docs);
+        await registerDocs(job.name, job.url, job.version, readme, docs);
 
         log.info(`Successfully compiled package ${job.name} at version ${job.version}`, job);
 
