@@ -299,6 +299,7 @@ async function cloneRepo(job) {
     try {
         const localRepoPath = getLocalRepoPath(job);
 
+        await fs.rm(localRepoPath, { recursive: true });
         await fs.mkdir(localRepoPath, { recursive: true });
         
         await execFile('git', [ 'clone', '--branch', job.version, '--depth', '1', job.url, localRepoPath ], {
