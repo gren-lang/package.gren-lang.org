@@ -15,11 +15,13 @@ api.use(packageRouter.routes());
 api.use(async (ctx, next) => {
   await next();
 
-    if ((ctx.status = 404)) {
+  if ((ctx.status = 404)) {
     views.render(ctx, {
       html: views.notFound,
-      json: () => { error: "Not found" },
-      text: () => "Not found"
+      json: () => {
+        return { error: "Not found" };
+      },
+      text: () => "Not found",
     });
   }
 });

@@ -17,8 +17,10 @@ export async function rateLimit(ctx, next) {
     ctx.status = 429;
     views.render(ctx, {
       html: views.rateLimit,
-      json: () => { error: "Rate limit exceeded" },
-      text: () => "Rate limit exceeded"
+      json: () => {
+        return { error: "Rate limit exceeded" };
+      },
+      text: () => "Rate limit exceeded",
     });
 
     return;
