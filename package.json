@@ -17,6 +17,7 @@
     "ejs": "^3.1.8",
     "gren-compiler-library": "^0.1.0",
     "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
     "semver": "^7.3.7",
     "sqlite3": "^5.0.8",
     "xdg-basedir": "^5.1.0"

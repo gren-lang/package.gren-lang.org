@@ -1,10 +1,13 @@
 import Koa from "koa";
+import bodyParser from "koa-bodyparser";
 
 import { rateLimit } from "#src/rate_limit";
 import { router as packageRouter } from "#src/package";
 import * as views from "#src/views";
 
 export const api = new Koa();
+
+api.use(bodyParser());
 
 api.use(rateLimit);
 

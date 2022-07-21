@@ -30,8 +30,16 @@ router.get("/package/jobs", async (ctx, next) => {
   }
 });
 
-router.post("/package/:name/sync", async (ctx, next) => {
-  const packageName = ctx.params.name;
+router.get("/package/sync", async (ctx, next) => {
+  views.render(ctx, {
+    html: () => views.packageSync(),
+    json: () => JSON.stringify({ message: "Use HTML form" }, null, 4),
+    text: () => "Use HTML form",
+  });
+});
+
+router.post("/package/sync", async (ctx, next) => {
+  const packageName = ctx.request.body.packageName;
   const githubUrl = githubUrlForName(packageName);
 
   try {
@@ -130,7 +138,7 @@ function scheduleJobForRetry(id, numberOfTimesRetried, reason) {
   return db.run(
     `
 UPDATE package_import_jobs
-SET 
+SET
     message = $reason,
     retry = retry + 1,
     process_after = datetime('now', $nextTimeIncrease)
@@ -149,7 +157,7 @@ function advanceJob(id, nextStep) {
   return db.run(
     `
 UPDATE package_import_jobs
-SET 
+SET
     step = $nextStep,
     retry = 0,
     process_after = datetime(),
@@ -168,7 +176,7 @@ function stopJob(id, reason) {
   return db.run(
     `
 UPDATE package_import_jobs
-SET 
+SET
     in_progress = FALSE,
     message = $reason,
     process_after = datetime()
@@ -185,7 +193,7 @@ WHERE
 async function cleanup() {
   const changes = await db.run(
     `
-DELETE FROM package_import_jobs 
+DELETE FROM package_import_jobs
 WHERE in_progress = FALSE
 AND process_after < datetime('now', '-1 minute')
 `,
