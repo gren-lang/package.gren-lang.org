@@ -5,7 +5,8 @@
   "description": "The server powering package.gren-lang.org",
   "main": "index.js",
   "imports": {
-    "#src/*": "./src/*.js"
+    "#src/*": "./src/*.js",
+    "#db/*": "./src/db/*.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

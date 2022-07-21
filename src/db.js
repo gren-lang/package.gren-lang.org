@@ -3,6 +3,9 @@ import sqlite3 from "sqlite3";
 
 import * as log from "#src/log";
 
+import * as packageImportJobs from "#db/package_import_jobs";
+import * as packages from "#db/packages";
+
 const dbPathEnvKey = "GREN_PACKAGES_DATABASE";
 const dbPath = process.env[dbPathEnvKey]
   ? process.env[dbPathEnvKey]
@@ -26,34 +29,8 @@ PRAGMA busy_timeout = 2000;
 PRAGMA foreign_keys = on;
 `);
 
-    await run(`
-CREATE TABLE IF NOT EXISTS package_import_jobs (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    url TEXT NOT NULL,
-    version TEXT NOT NULL,
-    step TEXT NOT NULL,
-    in_progress INT NOT NULL,
-    retry INT NOT NULL,
-    process_after TEXT NOT NULL,
-    message TEXT NOT NULL,
-    UNIQUE(name, version)
-) STRICT;
-`);
-
-    await run(`
-CREATE TABLE IF NOT EXISTS packages (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    version TEXT NOT NULL,
-    url TEXT NOT NULL,
-    imported TEXT NOT NULL,
-    metadata TEXT NOT NULL,
-    readme TEXT NOT NULL,
-    docs TEXT NOT NULL,
-    UNIQUE(name, version)
-) STRICT;
-`);
+    await run(packageImportJobs.migrations);
+    await run(packages.migrations);
   } catch (err) {
     log.error(`Failed to initialize database ${dbPath} with error ${err}`);
     process.exit(1);

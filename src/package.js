@@ -11,13 +11,16 @@ import * as log from "#src/log";
 import * as db from "#src/db";
 import * as views from "#src/views";
 
+import * as packageImportJobs from "#db/package_import_jobs";
+import * as packages from "#db/packages";
+
 export const router = new Router();
 
 const execFile = util.promisify(childProcess.execFile);
 
 router.get("/package/jobs", async (ctx, next) => {
   try {
-    const rows = await getAllJobs();
+    const rows = await packageImportJobs.getAllJobs();
 
     views.render(ctx, {
       html: () => views.packageJobs({ jobs: rows }),
@@ -43,7 +46,12 @@ router.post("/package/sync", async (ctx, next) => {
   const githubUrl = githubUrlForName(packageName);
 
   try {
-    await registerJob(packageName, githubUrl, "*", stepFindMissingVersions);
+    await packageImportJobs.registerJob(
+      packageName,
+      githubUrl,
+      "*",
+      packageImportJobs.stepFindMissingVersions
+    );
 
     log.info(`Begin import of ${packageName}`);
 
@@ -64,192 +72,6 @@ function githubUrlForName(name) {
   return `https://github.com/${name}.git`;
 }
 
-// DB queries
-
-function getAllJobs() {
-  return db.query(
-    `
-SELECT * FROM package_import_jobs
-`,
-    {}
-  );
-}
-
-function getInProgressJob() {
-  return db.queryOne(
-    `
-SELECT *
-FROM package_import_jobs
-WHERE in_progress = TRUE
-AND process_after < datetime()
-ORDER BY process_after
-LIMIT 1
-`,
-    {}
-  );
-}
-
-const stepFindMissingVersions = "FIND_MISSING_VERSIONS";
-const stepCloneRepo = "CLONE_REPO";
-const stepBuildDocs = "BUILD_DOCS";
-const stepCleanup = "CLEANUP";
-
-function registerJob(name, url, version, step) {
-  return db.run(
-    `
-INSERT INTO package_import_jobs (
-    name,
-    url,
-    version,
-    step,
-    in_progress,
-    retry,
-    process_after,
-    message
-) VALUES (
-    $name,
-    $url,
-    $version,
-    $step,
-    TRUE,
-    0,
-    datetime(),
-    'Waiting to execute'
-)
-`,
-    {
-      $name: name,
-      $url: url,
-      $version: version,
-      $step: step,
-    }
-  );
-}
-
-const retryTimeIncreaseInSeconds = [5, 15, 60, 300, 600];
-
-function scheduleJobForRetry(id, numberOfTimesRetried, reason) {
-  const nextTimeIncrease = retryTimeIncreaseInSeconds[numberOfTimesRetried];
-
-  if (!nextTimeIncrease) {
-    return advanceJob(id, stepCleanup);
-  }
-
-  return db.run(
-    `
-UPDATE package_import_jobs
-SET
-    message = $reason,
-    retry = retry + 1,
-    process_after = datetime('now', $nextTimeIncrease)
-WHERE
-    id = $id
-`,
-    {
-      $id: id,
-      $reason: `${reason}, will retry`,
-      $nextTimeIncrease: `${nextTimeIncrease} seconds`,
-    }
-  );
-}
-
-function advanceJob(id, nextStep) {
-  return db.run(
-    `
-UPDATE package_import_jobs
-SET
-    step = $nextStep,
-    retry = 0,
-    process_after = datetime(),
-    message = 'Waiting to execute'
-WHERE
-    id = $id
-`,
-    {
-      $id: id,
-      $nextStep: nextStep,
-    }
-  );
-}
-
-function stopJob(id, reason) {
-  return db.run(
-    `
-UPDATE package_import_jobs
-SET
-    in_progress = FALSE,
-    message = $reason,
-    process_after = datetime()
-WHERE
-    id = $id
-`,
-    {
-      $id: id,
-      $reason: reason,
-    }
-  );
-}
-
-async function cleanup() {
-  const changes = await db.run(
-    `
-DELETE FROM package_import_jobs
-WHERE in_progress = FALSE
-AND process_after < datetime('now', '-1 minute')
-`,
-    {}
-  );
-
-  if (changes > 0) {
-    log.info(`Deleted ${changes} stale package jobs.`);
-  }
-}
-
-function registerDocs(name, url, version, metadata, readme, docs) {
-  return db.run(
-    `
-INSERT INTO packages (
-    name,
-    version,
-    url,
-    imported,
-    metadata,
-    readme,
-    docs
-) VALUES (
-    $name,
-    $version,
-    $url,
-    datetime(),
-    $metadata,
-    $readme,
-    $docs
-)
-`,
-    {
-      $name: name,
-      $url: url,
-      $version: version,
-      $metadata: metadata,
-      $readme: readme,
-      $docs: docs,
-    }
-  );
-}
-
-function existingVersions(name) {
-  return db.query(
-    `
-SELECT version
-FROM packages
-WHERE name = $name
-`,
-    {
-      $name: name,
-    }
-  );
-}
-
 // Scheduled job
 
 async function scheduledJob() {
@@ -263,7 +85,7 @@ async function scheduledJob() {
 }
 
 async function whenScheduled() {
-  const job = await getInProgressJob();
+  const job = await packageImportJobs.getInProgressJob();
 
   if (job) {
     log.info("Executing job", job);
@@ -273,21 +95,21 @@ async function whenScheduled() {
 
 async function performJob(job) {
   switch (job.step) {
-    case stepFindMissingVersions:
+    case packageImportJobs.stepFindMissingVersions:
       await findMissingVersions(job);
       break;
-    case stepCloneRepo:
+    case packageImportJobs.stepCloneRepo:
       await cloneRepo(job);
       break;
-    case stepBuildDocs:
+    case packageImportJobs.stepBuildDocs:
       await buildDocs(job);
       break;
-    case stepCleanup:
+    case packageImportJobs.stepCleanup:
       await removeJobWorkingDir(job);
       break;
     default:
       log.error(`Don't know what to do with job at step ${job.step}`, job);
-      await stopJob(job.id, "Don't know what to do...");
+      await packageImportJobs.stopJob(job.id, "Don't know what to do...");
       break;
   }
 }
@@ -298,7 +120,9 @@ async function findMissingVersions(job) {
       timeout: 3000,
     });
 
-    const alreadyImportedVersionRows = await existingVersions(job.name);
+    const alreadyImportedVersionRows = await packages.existingVersions(
+      job.name
+    );
 
     const alreadyImportedVersions = alreadyImportedVersionRows.map(
       (row) => row.version
@@ -319,27 +143,35 @@ async function findMissingVersions(job) {
 
     for (let tag of entries) {
       try {
-        await registerJob(job.name, job.url, tag, stepCloneRepo);
+        await packageImportJobs.registerJob(
+          job.name,
+          job.url,
+          tag,
+          packageImportJobs.stepCloneRepo
+        );
       } catch (error) {
         // 19: SQLITE_CONSTRAINT, means row already exists
         if (error.errno === 19) {
           // ignore
         } else {
           log.error(
-            "Unknown error when trying to register import job for ${job.name} version ${tag}.",
+            `Unknown error when trying to register import job for ${job.name} version ${tag}.`,
             error
           );
         }
       }
     }
 
-    await stopJob(job.id, "Completed successfully");
+    await packageImportJobs.stopJob(job.id, "Completed successfully");
   } catch (error) {
     if (error.code === 128) {
-      await stopJob(job.id, `Repository doesn\'t exist: ${job.url}`);
+      await packageImportJobs.stopJob(
+        job.id,
+        `Repository doesn\'t exist: ${job.url}`
+      );
     } else {
       log.error("Unknown error when finding tags for remote git repo", error);
-      await scheduleJobForRetry(
+      await packageImportJobs.scheduleJobForRetry(
         job.id,
         job.retry,
         "Unknown error when finding tags for git repo."
@@ -376,10 +208,10 @@ async function cloneRepo(job) {
       job
     );
 
-    await advanceJob(job.id, stepBuildDocs);
+    await packageImportJobs.advanceJob(job.id, packageImportJobs.stepBuildDocs);
   } catch (error) {
     log.error("Unknown error when cloning remote git repo", error);
-    await scheduleJobForRetry(
+    await packageImportJobs.scheduleJobForRetry(
       job.id,
       job.retry,
       "Unknown error when cloning git repo."
@@ -417,14 +249,21 @@ async function buildDocs(job) {
       encoding: "utf-8",
     });
 
-    await registerDocs(job.name, job.url, job.version, metadata, readme, docs);
+    await packages.registerDocs(
+      job.name,
+      job.url,
+      job.version,
+      metadata,
+      readme,
+      docs
+    );
 
     log.info(
       `Successfully compiled package ${job.name} at version ${job.version}`,
       job
     );
 
-    await advanceJob(job.id, stepCleanup);
+    await packageImportJobs.advanceJob(job.id, packageImportJobs.stepCleanup);
   } catch (error) {
     // 19: SQLITE_CONSTRAINT, means row already exists
     if (error.errno === 19) {
@@ -432,7 +271,7 @@ async function buildDocs(job) {
         `Package ${job.name} at version ${job.version} already exist in our system`,
         job
       );
-      await advanceJob(job.id, stepCleanup);
+      await packageImportJobs.advanceJob(job.id, packageImportJobs.stepCleanup);
       return;
     }
 
@@ -445,7 +284,7 @@ async function buildDocs(job) {
 
     if (compilerError.title === "NO gren.json FILE") {
       log.error("Package doesn't contain gren.json file", compilerError);
-      await scheduleJobForRetry(
+      await packageImportJobs.scheduleJobForRetry(
         job.id,
         job.retry,
         "Package doesn't contain gren.json file"
@@ -455,14 +294,14 @@ async function buildDocs(job) {
         "Package does not support current Gren compiler",
         compilerError
       );
-      await scheduleJobForRetry(
+      await packageImportJobs.scheduleJobForRetry(
         job.id,
         job.retry,
         "Package doesn't support current Gren compiler."
       );
     } else {
       log.error("Unknown error when compiling project", compilerError);
-      await scheduleJobForRetry(
+      await packageImportJobs.scheduleJobForRetry(
         job.id,
         job.retry,
         "Unknown error when compiling project."
@@ -482,10 +321,10 @@ async function removeJobWorkingDir(job) {
       job
     );
 
-    await stopJob(job.id, "Import complete");
+    await packageImportJobs.stopJob(job.id, "Import complete");
   } catch (error) {
     log.error("Unknown error when trying to cleanup after import.", error);
-    await scheduleJobForRetry(
+    await packageImportJobs.scheduleJobForRetry(
       job.id,
       job.retry,
       "Unknown error when trying to cleanup after import."
@@ -494,5 +333,3 @@ async function removeJobWorkingDir(job) {
 }
 
 setTimeout(scheduledJob, 5000);
-
-setInterval(cleanup, 5000);
