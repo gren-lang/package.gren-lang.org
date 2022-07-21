@@ -7,10 +7,9 @@ import * as log from "#src/log";
 
 const port = 3000;
 
-const server = http.createServer({ keepAlive: true }, api.callback());
+const server = http.createServer({}, api.callback());
 
 server.setTimeout(5000);
-server.keepAliveTimeout = 60000;
 
 server.listen(port, () => {
   log.info(`Server running on port ${port} using node ${process.version}`);
