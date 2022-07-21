@@ -24,7 +24,7 @@ router.get("/package/jobs", async (ctx, next) => {
 
     views.render(ctx, {
       html: () => views.packageJobs({ jobs: rows }),
-      json: () => JSON.stringify(rows, null, 4),
+      json: () => rows,
       text: () => `${rows.length} jobs`,
     });
   } catch (err) {
@@ -36,7 +36,7 @@ router.get("/package/jobs", async (ctx, next) => {
 router.get("/package/sync", async (ctx, next) => {
   views.render(ctx, {
     html: () => views.packageSync(),
-    json: () => JSON.stringify({ message: "Use HTML form" }, null, 4),
+    json: () => { message: "Use HTML form" },
     text: () => "Use HTML form",
   });
 });

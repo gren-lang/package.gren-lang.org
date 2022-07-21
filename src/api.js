@@ -8,25 +8,18 @@ import * as views from "#src/views";
 export const api = new Koa();
 
 api.use(bodyParser());
-
 api.use(rateLimit);
-
 api.use(packageRouter.routes());
 
 // 404 handling, must be last
 api.use(async (ctx, next) => {
   await next();
-  if ((ctx.status = 404)) {
+
+    if ((ctx.status = 404)) {
     views.render(ctx, {
       html: views.notFound,
-      json: function () {
-        return JSON.stringify({ error: "Not found" }, null, 4);
-      },
-      text: function () {
-        return "Not found";
-      },
+      json: () => { error: "Not found" },
+      text: () => "Not found"
     });
-
-    return;
   }
 });

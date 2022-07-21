@@ -28,7 +28,7 @@ export function render(ctx, typeMap) {
       break;
     case "json":
       ctx.type = "json";
-      ctx.body = typeMap.json();
+      ctx.body = JSON.stringify(typeMap.json(), null, 4);
       break;
     default:
       ctx.type = "text";
