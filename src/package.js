@@ -35,7 +35,7 @@ router.get("/package/jobs", async (ctx, next) => {
 
 router.get("/package/sync", async (ctx, next) => {
   views.render(ctx, {
-    html: () => views.packageSync(),
+    html: views.packageSync,
     json: () => {
       return { error: "Use HTML form" };
     },
@@ -68,6 +68,17 @@ router.post("/package/sync", async (ctx, next) => {
       ctx.throw(500);
     }
   }
+});
+
+router.get("/package/search", async (ctx, next) => {
+    const query = ctx.request.query.query;
+    const results = [];
+
+    views.render(ctx, {
+        html: () => views.packageSearch({ query, results }),
+        json: () => results,
+        text: () => results.join('\n')
+    });
 });
 
 function githubUrlForName(name) {

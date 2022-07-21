@@ -1,0 +1,10 @@
+<%- include('/header.ejs', { refresh: false }) -%>
+    <h1>Welcome to the Gren package site</h1>
+
+    <div><a href="/package/sync">Add a package</a></div>
+
+    <form action="/package/search" "method="post">
+        <input id="query" "type="search" name="query" />
+        <button type="submit">Search</button>
+    </form>
+<%- include('/footer.ejs') -%>

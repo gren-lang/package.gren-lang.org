@@ -37,7 +37,9 @@ export function render(ctx, typeMap) {
   }
 }
 
+export const root = compileTemplate("root");
 export const packageSync = compileTemplate("package_sync");
 export const packageJobs = compileTemplate("package_jobs");
+export const packageSearch = compileTemplate("package_search");
 export const rateLimit = compileTemplate("rate_limit");
 export const notFound = compileTemplate("not_found");

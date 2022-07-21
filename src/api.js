@@ -2,6 +2,7 @@ import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 
 import { rateLimit } from "#src/rate_limit";
+import { router as rootRouter } from "#src/root";
 import { router as packageRouter } from "#src/package";
 import * as views from "#src/views";
 
@@ -9,6 +10,7 @@ export const api = new Koa();
 
 api.use(bodyParser());
 api.use(rateLimit);
+api.use(rootRouter.routes());
 api.use(packageRouter.routes());
 
 // 404 handling, must be last

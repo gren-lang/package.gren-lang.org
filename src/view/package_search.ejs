@@ -1,0 +1,8 @@
+<%- include('/header.ejs', { refresh: false }) -%>
+    <h1>Search results for '<%= query %>'</h1>
+
+    <form action="/package/search" "method="post">
+        <input id="query" "type="search" name="query" value="<%= query %>" />
+        <button type="submit">Search</button>
+    </form>
+<%- include('/footer.ejs') -%>
