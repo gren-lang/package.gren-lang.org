@@ -5,4 +5,10 @@
         <input id="query" "type="search" name="query" value="<%= query %>" />
         <button type="submit">Search</button>
     </form>
+
+    <ul>
+        <%_ results.forEach(function(result) { -%>
+        <li><%- result.name %>: <%- result.summary %></li>
+        <%_ }); -%>
+    </ul>
 <%- include('/footer.ejs') -%>

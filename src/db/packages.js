@@ -125,3 +125,15 @@ WHERE rowid = $rowid
     }
   );
 }
+
+export function searchForPackage(query) {
+  return db.query(
+    `
+SELECT name, version, highlight(packages_fts, 2, '<b>', '</b>') as summary
+FROM packages_fts($query)
+`,
+    {
+      $query: `"${query}"`,
+    }
+  );
+}

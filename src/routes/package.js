@@ -72,7 +72,7 @@ router.post("/sync", async (ctx, next) => {
 
 router.get("/search", async (ctx, next) => {
   const query = ctx.request.query.query;
-  const results = [];
+  const results = await packages.searchForPackage(query);
 
   views.render(ctx, {
     html: () => views.packageSearch({ query, results }),
