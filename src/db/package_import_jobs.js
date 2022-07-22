@@ -1,7 +1,8 @@
 import * as db from "#src/db";
 import * as log from "#src/log";
 
-export const migrations = `
+export const migrations = [
+  `
 CREATE TABLE IF NOT EXISTS package_import_jobs (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
@@ -14,7 +15,8 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
     message TEXT NOT NULL,
     UNIQUE(name, version)
 ) STRICT;
-`;
+`,
+];
 
 export function getAllJobs() {
   return db.query(

@@ -255,21 +255,40 @@ async function buildDocs(job) {
     const metadata = await fs.readFile(path.join(localRepoPath, "gren.json"), {
       encoding: "utf-8",
     });
+
     const readme = await fs.readFile(path.join(localRepoPath, "README.md"), {
       encoding: "utf-8",
     });
+
     const docs = await fs.readFile(path.join(localRepoPath, "docs.json"), {
       encoding: "utf-8",
     });
 
-    await packages.registerDocs(
-      job.name,
-      job.url,
-      job.version,
-      metadata,
-      readme,
-      docs
-    );
+    try {
+      await db.run("BEGIN");
+
+      await packages.registerDocs(
+        job.name,
+        job.url,
+        job.version,
+        metadata,
+        readme,
+        docs
+      );
+
+      const metadataObj = JSON.parse(metadata);
+
+      await packages.registerForSearch(
+        job.name,
+        job.version,
+        metadataObj.summary
+      );
+
+      await db.run("COMMIT");
+    } catch (err) {
+      await db.run("ROLLBACK");
+      throw err;
+    }
 
     log.info(
       `Successfully compiled package ${job.name} at version ${job.version}`,

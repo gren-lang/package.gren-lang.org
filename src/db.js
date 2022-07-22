@@ -29,8 +29,14 @@ PRAGMA busy_timeout = 2000;
 PRAGMA foreign_keys = on;
 `);
 
-    await run(packageImportJobs.migrations);
-    await run(packages.migrations);
+    const migrations = [].concat(
+      packageImportJobs.migrations,
+      packages.migrations
+    );
+
+    for (let migration of migrations) {
+      await run(migration);
+    }
   } catch (err) {
     log.error(`Failed to initialize database ${dbPath} with error ${err}`);
     process.exit(1);
