@@ -6,7 +6,8 @@
   "main": "index.js",
   "imports": {
     "#src/*": "./src/*.js",
-    "#db/*": "./src/db/*.js"
+    "#db/*": "./src/db/*.js",
+    "#routes/*": "./src/routes/*.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

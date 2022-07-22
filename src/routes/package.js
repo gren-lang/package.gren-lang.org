@@ -18,7 +18,7 @@ export const router = new Router();
 
 const execFile = util.promisify(childProcess.execFile);
 
-router.get("/package/jobs", async (ctx, next) => {
+router.get("/jobs", async (ctx, next) => {
   try {
     const rows = await packageImportJobs.getAllJobs();
 
@@ -33,7 +33,7 @@ router.get("/package/jobs", async (ctx, next) => {
   }
 });
 
-router.get("/package/sync", async (ctx, next) => {
+router.get("/sync", async (ctx, next) => {
   views.render(ctx, {
     html: views.packageSync,
     json: () => {
@@ -43,7 +43,7 @@ router.get("/package/sync", async (ctx, next) => {
   });
 });
 
-router.post("/package/sync", async (ctx, next) => {
+router.post("/sync", async (ctx, next) => {
   const packageName = ctx.request.body.packageName;
   const githubUrl = githubUrlForName(packageName);
 
@@ -70,15 +70,15 @@ router.post("/package/sync", async (ctx, next) => {
   }
 });
 
-router.get("/package/search", async (ctx, next) => {
-    const query = ctx.request.query.query;
-    const results = [];
+router.get("/search", async (ctx, next) => {
+  const query = ctx.request.query.query;
+  const results = [];
 
-    views.render(ctx, {
-        html: () => views.packageSearch({ query, results }),
-        json: () => results,
-        text: () => results.join('\n')
-    });
+  views.render(ctx, {
+    html: () => views.packageSearch({ query, results }),
+    json: () => results,
+    text: () => results.join("\n"),
+  });
 });
 
 function githubUrlForName(name) {
