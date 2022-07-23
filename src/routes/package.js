@@ -81,6 +81,51 @@ router.get("/search", async (ctx, next) => {
   });
 });
 
+router.get("/:package", async (ctx, next) => {
+  const packageName = ctx.params.package;
+  const versionRowsOfPackage = await packages.existingVersions(packageName);
+  const versionsOfPackage = versionRowsOfPackage.map((row) => row.version);
+
+  if (versionsOfPackage.length === 0) {
+    ctx.status = 404;
+    return;
+  }
+
+  const latestVersion = versionsOfPackage.sort(semver.rcompare)[0];
+  const packageNameUri = encodeURIComponent(packageName);
+  const versionUri = encodeURIComponent(latestVersion);
+
+  ctx.status = 303;
+  ctx.redirect(`/package/${packageNameUri}/version/${versionUri}/readme`);
+});
+
+router.get("/:package/version/:version/readme", async (ctx, next) => {
+  const packageName = ctx.params.package;
+  const version = ctx.params.version;
+
+  views.render(ctx, {
+    html: () => views.packageReadme(),
+    json: () => {
+        return { readme: "" }
+    },
+    text: () => ""
+  });
+});
+
+router.get("/:package/version/:version/module/:module", async (ctx, next) => {
+  const packageName = ctx.params.package;
+  const version = ctx.params.version;
+  const module = ctx.params.module;
+
+  views.render(ctx, {
+    html: () => views.packageModule(),
+    json: () => {
+        return {}
+    },
+    text: () => ""
+  });
+});
+
 function githubUrlForName(name) {
   return `https://github.com/${name}.git`;
 }

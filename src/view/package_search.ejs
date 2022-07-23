@@ -8,7 +8,9 @@
 
     <ul>
         <%_ results.forEach(function(result) { -%>
-        <li><%- result.name %>: <%= result.summary %></li>
+        <li><a href="/package/<%= encodeURIComponent(result.name) %>" title="<%= result.name %>">
+            <%= result.name %>: <%= result.summary %>
+        </a></li>
         <%_ }); -%>
     </ul>
 <%- include('/footer.ejs') -%>
