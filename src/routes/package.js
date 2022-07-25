@@ -105,26 +105,20 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
   const packageName = ctx.params.package;
   const version = ctx.params.version;
 
-  const docs = await packages.getPackageOverview(packageName, version);
-  const renderedMarkdown = markdown.render(docs.readme);
-  const metadataObj = JSON.parse(docs.metadata);
+  const packageInfo = await packages.getPackageOverview(packageName, version);
+  const renderedMarkdown = markdown.render(packageInfo.readme);
 
+    const metadataObj = JSON.parse(packageInfo.metadata);
   const exposedModules = metadataObj["exposed-modules"].map((module) => {
-    const packageNameUri = encodeURIComponent(packageName);
-    const versionUri = encodeURIComponent(version);
-    const moduleUri = encodeURIComponent(module);
-
-    return {
-      name: module,
-      link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`,
-    };
+      return prepareModuleForView(packageName, version, module);
   });
 
   views.render(ctx, {
     html: () =>
       views.packageOverview({
-        name: docs.name,
-        version: docs.version,
+        packageName: packageInfo.name,
+        packageVersion: packageInfo.version,
+        packageOverviewLink: packageOverviewLink(packageName, version),
         readme: renderedMarkdown,
         exposedModules: exposedModules,
       }),
@@ -135,13 +129,48 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
   });
 });
 
+function packageOverviewLink(packageName, version) {
+    const packageNameUri = encodeURIComponent(packageName);
+    const versionUri = encodeURIComponent(version);
+
+    return `/package/${packageNameUri}/version/${versionUri}/overview`;
+}
+
+function prepareModuleForView(packageName, version, moduleName) {
+    const packageNameUri = encodeURIComponent(packageName);
+    const versionUri = encodeURIComponent(version);
+    const moduleUri = encodeURIComponent(moduleName);
+
+    return {
+        name: moduleName,
+        link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`,
+    };
+}
+
 router.get("/:package/version/:version/module/:module", async (ctx, next) => {
   const packageName = ctx.params.package;
   const version = ctx.params.version;
   const module = ctx.params.module;
 
+  const packageInfo = await packages.getPackageOverview(packageName, version);
+  const docs = JSON.parse(packageInfo.docs);
+
+  const moduleInfo = docs.find((mod) => mod.name === module);
+
+    const metadataObj = JSON.parse(packageInfo.metadata);
+  const exposedModules = metadataObj["exposed-modules"].map((module) => {
+      return prepareModuleForView(packageName, version, module);
+  });
+
   views.render(ctx, {
-    html: () => views.packageModule(),
+    html: () => views.packageModule({
+        packageName: packageName,
+        packageVersion: version,
+        packageOverviewLink: packageOverviewLink(packageName, version),
+        moduleName: module,
+        moduleComment: markdown.render(moduleInfo.comment),
+        exposedModules: exposedModules
+    }),
     json: () => {
       return {};
     },

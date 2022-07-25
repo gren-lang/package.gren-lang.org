@@ -1,3 +1,7 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <h1>Package Module</h1>
+    <h1><%= moduleName %></h1>
+
+    <%- moduleComment %>
+
+    <%- include('/package_sidebar.ejs', { exposedModules }) -%>
 <%- include('/footer.ejs') -%>

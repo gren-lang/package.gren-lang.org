@@ -1,0 +1,10 @@
+<ul>
+    <li><a href="<%= packageOverviewLink %>" title="Overview">
+        Overview
+    </a></li>
+    <%_ exposedModules.forEach(function(module) { -%>
+    <li><a href="<%- module.link %>" title="<%= module.name %>">
+        <%= module.name %>
+    </a></li>
+    <%_ }); -%>
+</ul>
