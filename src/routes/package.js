@@ -6,6 +6,7 @@ import { xdgCache } from "xdg-basedir";
 import * as path from "path";
 import * as fs from "fs/promises";
 import * as gren from "gren-compiler-library";
+import { default as MarkdownIt } from "markdown-it";
 
 import * as log from "#src/log";
 import * as db from "#src/db";
@@ -16,6 +17,7 @@ import * as packages from "#db/packages";
 
 export const router = new Router();
 
+const markdown = new MarkdownIt();
 const execFile = util.promisify(childProcess.execFile);
 
 router.get("/jobs", async (ctx, next) => {
@@ -96,19 +98,39 @@ router.get("/:package", async (ctx, next) => {
   const versionUri = encodeURIComponent(latestVersion);
 
   ctx.status = 303;
-  ctx.redirect(`/package/${packageNameUri}/version/${versionUri}/readme`);
+  ctx.redirect(`/package/${packageNameUri}/version/${versionUri}/overview`);
 });
 
-router.get("/:package/version/:version/readme", async (ctx, next) => {
+router.get("/:package/version/:version/overview", async (ctx, next) => {
   const packageName = ctx.params.package;
   const version = ctx.params.version;
 
+  const docs = await packages.getPackageOverview(packageName, version);
+  const renderedMarkdown = markdown.render(docs.readme);
+  const metadataObj = JSON.parse(docs.metadata);
+
+  const exposedModules = metadataObj["exposed-modules"].map((module) => {
+    const packageNameUri = encodeURIComponent(packageName);
+    const versionUri = encodeURIComponent(version);
+    const moduleUri = encodeURIComponent(module);
+
+    return {
+        name: module,
+        link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`
+    };
+  });
+
   views.render(ctx, {
-    html: () => views.packageReadme(),
+    html: () => views.packageOverview({
+        name: docs.name,
+        version: docs.version,
+        readme: renderedMarkdown,
+        exposedModules: exposedModules
+    }),
     json: () => {
-        return { readme: "" }
+        return docs;
     },
-    text: () => ""
+    text: () => docs.readme
   });
 });
 

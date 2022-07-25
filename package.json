@@ -20,6 +20,7 @@
     "gren-compiler-library": "^0.1.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
+    "markdown-it": "13.0.1",
     "semver": "^7.3.7",
     "sqlite3": "^5.0.8",
     "xdg-basedir": "^5.1.0"

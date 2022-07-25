@@ -71,6 +71,22 @@ WHERE name = $name
   );
 }
 
+export function getPackageOverview(name, version) {
+  return db.queryOne(
+    `
+SELECT *
+FROM packages
+WHERE name = $name
+AND version = $version
+LIMIT 1
+`,
+    {
+      $name: name,
+      $version: version
+    }
+  );
+}
+
 export async function registerForSearch(name, version, summary) {
   const existingSearchData = await getLatestSearchVersion(name);
 

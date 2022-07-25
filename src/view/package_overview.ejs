@@ -1,0 +1,11 @@
+<%- include('/header.ejs', { refresh: false }) -%>
+    <%- readme %>
+
+    <ul>
+        <%_ exposedModules.forEach(function(module) { -%>
+        <li><a href="<%- module.link %>" title="<%= module.name %>">
+            <%= module.name %>
+        </a></li>
+        <%_ }); -%>
+    </ul>
+<%- include('/footer.ejs') -%>
