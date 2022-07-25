@@ -147,6 +147,8 @@ export function searchForPackage(query) {
     `
 SELECT name, version, summary
 FROM packages_fts($query)
+ORDER BY rank
+LIMIT 25
 `,
     {
       $query: `"${query}"`,
