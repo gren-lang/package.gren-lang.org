@@ -115,22 +115,23 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
     const moduleUri = encodeURIComponent(module);
 
     return {
-        name: module,
-        link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`
+      name: module,
+      link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`,
     };
   });
 
   views.render(ctx, {
-    html: () => views.packageOverview({
+    html: () =>
+      views.packageOverview({
         name: docs.name,
         version: docs.version,
         readme: renderedMarkdown,
-        exposedModules: exposedModules
-    }),
+        exposedModules: exposedModules,
+      }),
     json: () => {
-        return docs;
+      return docs;
     },
-    text: () => docs.readme
+    text: () => docs.readme,
   });
 });
 
@@ -142,9 +143,9 @@ router.get("/:package/version/:version/module/:module", async (ctx, next) => {
   views.render(ctx, {
     html: () => views.packageModule(),
     json: () => {
-        return {}
+      return {};
     },
-    text: () => ""
+    text: () => "",
   });
 });
 

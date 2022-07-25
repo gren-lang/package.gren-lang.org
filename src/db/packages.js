@@ -82,7 +82,7 @@ LIMIT 1
 `,
     {
       $name: name,
-      $version: version
+      $version: version,
     }
   );
 }
