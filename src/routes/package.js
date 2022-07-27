@@ -108,9 +108,9 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
   const packageInfo = await packages.getPackageOverview(packageName, version);
   const renderedMarkdown = markdown.render(packageInfo.readme);
 
-    const metadataObj = JSON.parse(packageInfo.metadata);
+  const metadataObj = JSON.parse(packageInfo.metadata);
   const exposedModules = metadataObj["exposed-modules"].map((module) => {
-      return prepareModuleForView(packageName, version, module);
+    return prepareModuleForView(packageName, version, module);
   });
 
   views.render(ctx, {
@@ -130,53 +130,171 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
 });
 
 function packageOverviewLink(packageName, version) {
-    const packageNameUri = encodeURIComponent(packageName);
-    const versionUri = encodeURIComponent(version);
+  const packageNameUri = encodeURIComponent(packageName);
+  const versionUri = encodeURIComponent(version);
 
-    return `/package/${packageNameUri}/version/${versionUri}/overview`;
+  return `/package/${packageNameUri}/version/${versionUri}/overview`;
 }
 
 function prepareModuleForView(packageName, version, moduleName) {
-    const packageNameUri = encodeURIComponent(packageName);
-    const versionUri = encodeURIComponent(version);
-    const moduleUri = encodeURIComponent(moduleName);
+  const packageNameUri = encodeURIComponent(packageName);
+  const versionUri = encodeURIComponent(version);
+  const moduleUri = encodeURIComponent(moduleName);
 
-    return {
-        name: moduleName,
-        link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`,
-    };
+  return {
+    name: moduleName,
+    link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`,
+  };
 }
 
 router.get("/:package/version/:version/module/:module", async (ctx, next) => {
   const packageName = ctx.params.package;
   const version = ctx.params.version;
-  const module = ctx.params.module;
+  const moduleName = ctx.params.module;
 
   const packageInfo = await packages.getPackageOverview(packageName, version);
   const docs = JSON.parse(packageInfo.docs);
 
-  const moduleInfo = docs.find((mod) => mod.name === module);
+  const moduleInfo = docs.find((mod) => mod.name === moduleName);
+  if (moduleInfo == null) {
+    ctx.status = 404;
+    return;
+  }
 
-    const metadataObj = JSON.parse(packageInfo.metadata);
+  const metadataObj = JSON.parse(packageInfo.metadata);
   const exposedModules = metadataObj["exposed-modules"].map((module) => {
-      return prepareModuleForView(packageName, version, module);
+    return prepareModuleForView(packageName, version, module);
   });
 
+  const moduleDocumentation = prepareModuleDocumentation(moduleInfo);
+
   views.render(ctx, {
-    html: () => views.packageModule({
+    html: () =>
+      views.packageModule({
         packageName: packageName,
         packageVersion: version,
         packageOverviewLink: packageOverviewLink(packageName, version),
-        moduleName: module,
-        moduleComment: markdown.render(moduleInfo.comment),
-        exposedModules: exposedModules
-    }),
+        moduleName: moduleName,
+        moduleComment: markdown.render(moduleDocumentation),
+        exposedModules: exposedModules,
+      }),
     json: () => {
-      return {};
+      return moduleInfo;
     },
-    text: () => "",
+    text: () => moduleDocumentation,
   });
 });
+
+function prepareModuleDocumentation(moduleInfo) {
+  const docSplit = moduleInfo.comment.split("\n@docs");
+  if (docSplit.length === 0) {
+    return "";
+  }
+
+  const intro = new Markdown(docSplit[0]);
+
+  const parts = docSplit
+    .slice(1)
+    .flatMap((p) => p.split(","))
+    .flatMap((block) => {
+      const words = block.trim().split(/\s+/);
+      if (words.length === 0) return [];
+
+      const firstWord = words[0];
+      const part = constructValue(moduleInfo, firstWord);
+
+      if (words.length === 1) {
+        return [part];
+      }
+
+      const moreMarkdown = new Markdown(
+        block.trimLeft().slice(firstWord.length)
+      );
+
+      return [part, moreMarkdown];
+    });
+
+  return [intro]
+    .concat(parts)
+    .map((p) => p.render())
+    .join("\n");
+}
+
+function Markdown(txt) {
+  this.txt = txt;
+}
+
+Markdown.prototype.render = function () {
+  return this.txt;
+};
+
+function Value(name, comment, type) {
+  this.name = name;
+  this.comment = comment;
+  this.type = type;
+}
+
+Value.prototype.render = function () {
+  return this.comment;
+};
+
+function Binop(name, comment, type) {
+  this.name = name;
+  this.comment = comment;
+  this.type = type;
+}
+
+Binop.prototype.render = function () {
+  return this.comment;
+};
+
+function Union(name, comment, args, tags) {
+  this.name = name;
+  this.comment = comment;
+  this.args = args;
+  this.tags = tags;
+}
+
+Union.prototype.render = function () {
+  return this.comment;
+};
+
+function Alias(name, comment, args, type) {
+  this.name = name;
+  this.comment = comment;
+  this.args = args;
+  this.type = type;
+}
+
+Alias.prototype.render = function () {
+  return this.comment;
+};
+
+function constructValue(moduleInfo, name) {
+  let data = findByName(moduleInfo.values, name);
+  if (data) {
+    return new Value(name, data.comment, data.type);
+  }
+
+  data = findByName(moduleInfo.binops, name);
+  if (data) {
+    return new Binop(name, data.comment, data.type);
+  }
+
+  data = findByName(moduleInfo.unions, name);
+  if (data) {
+    return new Union(name, data.comment, data.args, data.tags);
+  }
+
+  data = findByName(moduleInfo.aliases, name);
+  if (data) {
+    return new Alias(name, data.comment, data.args, data.type);
+  }
+}
+
+function findByName(list, name) {
+  return list.find((e) => e.name === name);
+}
 
 function githubUrlForName(name) {
   return `https://github.com/${name}.git`;
