@@ -175,7 +175,7 @@ router.get("/:package/version/:version/module/:module", async (ctx, next) => {
         packageVersion: version,
         packageOverviewLink: packageOverviewLink(packageName, version),
         moduleName: moduleName,
-        moduleComment: markdown.render(moduleDocumentation),
+        moduleDocs: moduleDocumentation,
         exposedModules: exposedModules,
       }),
     json: () => {
@@ -214,61 +214,38 @@ function prepareModuleDocumentation(moduleInfo) {
       return [part, moreMarkdown];
     });
 
-  return [intro]
-    .concat(parts)
-    .map((p) => p.render())
-    .join("\n");
+  return [intro].concat(parts);
 }
 
 function Markdown(txt) {
-  this.txt = txt;
+  this.html = markdown.render(txt);
 }
-
-Markdown.prototype.render = function () {
-  return this.txt;
-};
 
 function Value(name, comment, type) {
   this.name = name;
-  this.comment = comment;
+  this.comment = markdown.render(comment);
   this.type = type;
 }
-
-Value.prototype.render = function () {
-  return this.comment;
-};
 
 function Binop(name, comment, type) {
   this.name = name;
-  this.comment = comment;
+  this.comment = markdown.render(comment);
   this.type = type;
 }
 
-Binop.prototype.render = function () {
-  return this.comment;
-};
-
 function Union(name, comment, args, tags) {
   this.name = name;
-  this.comment = comment;
+  this.comment = markdown.render(comment);
   this.args = args;
   this.tags = tags;
 }
 
-Union.prototype.render = function () {
-  return this.comment;
-};
-
 function Alias(name, comment, args, type) {
   this.name = name;
-  this.comment = comment;
+  this.comment = markdown.render(comment);
   this.args = args;
   this.type = type;
 }
-
-Alias.prototype.render = function () {
-  return this.comment;
-};
 
 function constructValue(moduleInfo, name) {
   let data = findByName(moduleInfo.values, name);

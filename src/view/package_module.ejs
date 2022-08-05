@@ -1,7 +1,29 @@
 <%- include('/header.ejs', { refresh: false }) -%>
     <h1><%= moduleName %></h1>
 
-    <%- moduleComment %>
+    <%_ moduleDocs.forEach(function(block) { -%>
+    <%_ if (block.constructor.name === 'Alias') { -%>
+      <h2>Alias: <%= block.name %></h2>
+    <%_ } -%>
+
+    <%_ if (block.constructor.name === 'Union') { -%>
+      <h2><%= block.name %> <%= block.args %></h2>
+      <%- block.comment %>
+    <%_ } -%>
+
+    <%_ if (block.constructor.name === 'Binop') { -%>
+      <h2>Binop: <%= block.name %></h2>
+    <%_ } -%>
+
+    <%_ if (block.constructor.name === 'Value') { -%>
+      <h2><%= block.name %> : <%= block.type %></h2>
+      <%- block.comment %>
+    <%_ } -%>
+
+    <%_ if (block.constructor.name === 'Markdown') { -%>
+      <%- block.html %>
+    <%_ } -%>
+    <%_ }); -%>
 
     <%- include('/package_sidebar.ejs', { exposedModules }) -%>
 <%- include('/footer.ejs') -%>
