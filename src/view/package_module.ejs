@@ -3,16 +3,19 @@
 
     <%_ moduleDocs.forEach(function(block) { -%>
     <%_ if (block.constructor.name === 'Alias') { -%>
-      <h2>Alias: <%= block.name %></h2>
+      <h2>type alias <%= block.name %> <%= block.args %> =</h2>
+      <%= block.type %>
+      <%- block.comment %>
     <%_ } -%>
 
     <%_ if (block.constructor.name === 'Union') { -%>
-      <h2><%= block.name %> <%= block.args %></h2>
+      <h2>type <%= block.name %> <%= block.args %></h2>
       <%- block.comment %>
     <%_ } -%>
 
     <%_ if (block.constructor.name === 'Binop') { -%>
-      <h2>Binop: <%= block.name %></h2>
+      <h2><%= block.name %> : <%= block.type -%></h2>
+      <%- block.comment %>
     <%_ } -%>
 
     <%_ if (block.constructor.name === 'Value') { -%>
