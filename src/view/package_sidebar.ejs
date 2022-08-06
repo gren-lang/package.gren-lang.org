@@ -2,9 +2,12 @@
     <li><a href="<%= packageOverviewLink %>" title="Overview">
         Overview
     </a></li>
-    <%_ exposedModules.forEach(function(module) { -%>
+    <%_ for (let [group, modules] of Object.entries(exposedModules)) { -%>
+    <li><%= group -%></li>
+    <%_ modules.forEach(function(module) { -%>
     <li><a href="<%- module.link %>" title="<%= module.name %>">
         <%= module.name %>
     </a></li>
     <%_ }); -%>
+    <%_ } -%>
 </ul>

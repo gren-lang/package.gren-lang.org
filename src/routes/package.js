@@ -109,9 +109,11 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
   const renderedMarkdown = markdown.render(packageInfo.readme);
 
   const metadataObj = JSON.parse(packageInfo.metadata);
-  const exposedModules = metadataObj["exposed-modules"].map((module) => {
-    return prepareModuleForView(packageName, version, module);
-  });
+  const exposedModules = prepareExposedModulesView(
+    packageName,
+    version,
+    metadataObj
+  );
 
   views.render(ctx, {
     html: () =>
@@ -134,6 +136,23 @@ function packageOverviewLink(packageName, version) {
   const versionUri = encodeURIComponent(version);
 
   return `/package/${packageNameUri}/version/${versionUri}/overview`;
+}
+
+function prepareExposedModulesView(packageName, version, metadataObj) {
+  let exposedModules = metadataObj["exposed-modules"];
+  if (Array.isArray(exposedModules)) {
+    exposedModules = {
+      "": exposedModules,
+    };
+  }
+
+  for (let [key, value] of Object.entries(exposedModules)) {
+    exposedModules[key] = value.map((module) => {
+      return prepareModuleForView(packageName, version, module);
+    });
+  }
+
+  return exposedModules;
 }
 
 function prepareModuleForView(packageName, version, moduleName) {
@@ -162,9 +181,11 @@ router.get("/:package/version/:version/module/:module", async (ctx, next) => {
   }
 
   const metadataObj = JSON.parse(packageInfo.metadata);
-  const exposedModules = metadataObj["exposed-modules"].map((module) => {
-    return prepareModuleForView(packageName, version, module);
-  });
+  const exposedModules = prepareExposedModulesView(
+    packageName,
+    version,
+    metadataObj
+  );
 
   const moduleDocumentation = prepareModuleDocumentation(moduleInfo);
 
