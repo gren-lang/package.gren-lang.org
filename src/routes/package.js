@@ -7,6 +7,7 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import * as gren from "gren-compiler-library";
 import { default as MarkdownIt } from "markdown-it";
+import { default as zulip } from "zulip-js";
 
 import * as log from "#src/log";
 import * as db from "#src/db";
@@ -19,6 +20,12 @@ export const router = new Router();
 
 const markdown = new MarkdownIt();
 const execFile = util.promisify(childProcess.execFile);
+
+const zulipConfig = {
+  username: process.env["GREN_ZULIP_USERNAME"],
+  apiKey: process.env["GREN_ZULIP_APIKEY"],
+  realm: process.env["GREN_ZULIP_REALM"],
+};
 
 router.get("/jobs", async (ctx, next) => {
   try {
@@ -451,6 +458,7 @@ function getLocalRepoPath(job) {
 
 async function buildDocs(job) {
   try {
+    await gren.downloadCompiler();
     const compilerPath = gren.compilerPath;
     const compilerArgs = ["make", "--docs=./docs.json", "--report=json"];
 
@@ -498,6 +506,22 @@ async function buildDocs(job) {
       );
 
       await db.run("COMMIT");
+
+      try {
+        const conn = await zulip(zulipConfig);
+        const val = await conn.messages.send({
+          to: "packages",
+          type: "stream",
+          subject: job.name,
+          content: `
+Version ${job.version} was just published.
+
+${metadataObj.summary}
+
+Repo: ${job.url}
+`,
+        });
+      } catch (err) {}
     } catch (err) {
       await db.run("ROLLBACK");
       throw err;

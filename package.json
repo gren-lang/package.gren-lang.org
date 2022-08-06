@@ -23,7 +23,8 @@
     "markdown-it": "13.0.1",
     "semver": "^7.3.7",
     "sqlite3": "^5.0.8",
-    "xdg-basedir": "^5.1.0"
+    "xdg-basedir": "^5.1.0",
+    "zulip-js": "2.0.9"
   },
   "devDependencies": {
     "prettier": "2.7.1"
