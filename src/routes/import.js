@@ -18,7 +18,7 @@ export const router = new Router();
 
 const execFile = util.promisify(childProcess.execFile);
 
-router.get("/jobs", async (ctx, next) => {
+router.get("list-jobs", "/jobs", async (ctx, next) => {
   try {
     const rows = await dbPackageImportJob.getAllJobs();
 
@@ -33,7 +33,7 @@ router.get("/jobs", async (ctx, next) => {
   }
 });
 
-router.get("/init", async (ctx, next) => {
+router.get("init-job-ui", "/init", async (ctx, next) => {
   views.render(ctx, {
     html: views.packageSync,
     json: () => {
@@ -43,7 +43,7 @@ router.get("/init", async (ctx, next) => {
   });
 });
 
-router.post("/init", async (ctx, next) => {
+router.post("init-job", "/init", async (ctx, next) => {
   const packageName = ctx.request.body.packageName;
   const githubUrl = githubUrlForName(packageName);
 
@@ -58,7 +58,7 @@ router.post("/init", async (ctx, next) => {
     log.info(`Begin import of ${packageName}`);
 
     ctx.status = 303;
-    ctx.redirect("/import/jobs");
+    ctx.redirect(router.url("list-jobs"));
   } catch (error) {
     // 19: SQLITE_CONSTRAINT, means row already exists
     if (error.errno === 19) {
@@ -210,7 +210,10 @@ async function cloneRepo(job) {
       job
     );
 
-    await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepBuildDocs);
+    await dbPackageImportJob.advanceJob(
+      job.id,
+      dbPackageImportJob.stepBuildDocs
+    );
   } catch (error) {
     log.error("Unknown error when cloning remote git repo", error);
     await dbPackageImportJob.scheduleJobForRetry(
@@ -299,7 +302,10 @@ async function buildDocs(job) {
         `Package ${job.name} at version ${job.version} already exist in our system`,
         job
       );
-      await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepCleanup);
+      await dbPackageImportJob.advanceJob(
+        job.id,
+        dbPackageImportJob.stepCleanup
+      );
       return;
     }
 

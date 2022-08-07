@@ -7,11 +7,11 @@ let availableTokens = maxTokens;
 
 // Add token every `newTokenEveryMs` milliseconds, up to a maximum of `maxTokens`
 export function initRecurringTask() {
-    return setInterval(function () {
-        if (availableTokens < maxTokens) {
-            availableTokens++;
-        }
-    }, tokenIncreaseEveryMs);
+  return setInterval(function () {
+    if (availableTokens < maxTokens) {
+      availableTokens++;
+    }
+  }, tokenIncreaseEveryMs);
 }
 
 export async function rateLimit(ctx, next) {

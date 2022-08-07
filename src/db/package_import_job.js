@@ -158,6 +158,6 @@ AND process_after < datetime('now', '-1 minute')
 }
 
 export async function initRecurringTask() {
-    await cleanup();
-    return setInterval(cleanup, 5000);
+  await cleanup();
+  return setInterval(cleanup, 5000);
 }

@@ -10,7 +10,7 @@ export const router = new Router();
 
 const markdown = new MarkdownIt();
 
-router.get("/search", async (ctx, next) => {
+router.get("search", "/search", async (ctx, next) => {
   const query = ctx.request.query.query;
   const results = await dbPackage.searchForPackage(query);
 
@@ -21,7 +21,7 @@ router.get("/search", async (ctx, next) => {
   });
 });
 
-router.get("/:package", async (ctx, next) => {
+router.get("package-redirect", "/:package", async (ctx, next) => {
   const packageName = ctx.params.package;
   const versionRowsOfPackage = await dbPackage.existingVersions(packageName);
   const versionsOfPackage = versionRowsOfPackage.map((row) => row.version);
@@ -32,49 +32,53 @@ router.get("/:package", async (ctx, next) => {
   }
 
   const latestVersion = versionsOfPackage.sort(semver.rcompare)[0];
-  const packageNameUri = encodeURIComponent(packageName);
-  const versionUri = encodeURIComponent(latestVersion);
 
   ctx.status = 303;
-  ctx.redirect(`/package/${packageNameUri}/version/${versionUri}/overview`);
-});
-
-router.get("/:package/version/:version/overview", async (ctx, next) => {
-  const packageName = ctx.params.package;
-  const version = ctx.params.version;
-
-  const packageInfo = await dbPackage.getPackageOverview(packageName, version);
-  const renderedMarkdown = markdown.render(packageInfo.readme);
-
-  const metadataObj = JSON.parse(packageInfo.metadata);
-  const exposedModules = prepareExposedModulesView(
-    packageName,
-    version,
-    metadataObj
-  );
-
-  views.render(ctx, {
-    html: () =>
-      views.packageOverview({
-        packageName: packageInfo.name,
-        packageVersion: packageInfo.version,
-        packageOverviewLink: packageOverviewLink(packageName, version),
-        readme: renderedMarkdown,
-        exposedModules: exposedModules,
-      }),
-    json: () => {
-      return docs;
-    },
-    text: () => docs.readme,
+  ctx.redirect("package-overview", {
+    package: packageName,
+    version: latestVersion,
   });
 });
 
-function packageOverviewLink(packageName, version) {
-  const packageNameUri = encodeURIComponent(packageName);
-  const versionUri = encodeURIComponent(version);
+router.get(
+  "package-overview",
+  "/:package/version/:version/overview",
+  async (ctx, next) => {
+    const packageName = ctx.params.package;
+    const version = ctx.params.version;
 
-  return `/package/${packageNameUri}/version/${versionUri}/overview`;
-}
+    const packageInfo = await dbPackage.getPackageOverview(
+      packageName,
+      version
+    );
+    const renderedMarkdown = markdown.render(packageInfo.readme);
+
+    const metadataObj = JSON.parse(packageInfo.metadata);
+    const exposedModules = prepareExposedModulesView(
+      packageName,
+      version,
+      metadataObj
+    );
+
+    views.render(ctx, {
+      html: () =>
+        views.packageOverview({
+          packageName: packageInfo.name,
+          packageVersion: packageInfo.version,
+          packageOverviewLink: router.url("package-overview", {
+            package: packageName,
+            version: version,
+          }),
+          readme: renderedMarkdown,
+          exposedModules: exposedModules,
+        }),
+      json: () => {
+        return docs;
+      },
+      text: () => docs.readme,
+    });
+  }
+);
 
 function prepareExposedModulesView(packageName, version, metadataObj) {
   let exposedModules = metadataObj["exposed-modules"];
@@ -94,55 +98,65 @@ function prepareExposedModulesView(packageName, version, metadataObj) {
 }
 
 function prepareModuleForView(packageName, version, moduleName) {
-  const packageNameUri = encodeURIComponent(packageName);
-  const versionUri = encodeURIComponent(version);
-  const moduleUri = encodeURIComponent(moduleName);
-
   return {
     name: moduleName,
-    link: `/package/${packageNameUri}/version/${versionUri}/module/${moduleUri}`,
+    link: router.url("package-module", {
+      package: packageName,
+      version: version,
+      module: moduleName,
+    }),
   };
 }
 
-router.get("/:package/version/:version/module/:module", async (ctx, next) => {
-  const packageName = ctx.params.package;
-  const version = ctx.params.version;
-  const moduleName = ctx.params.module;
+router.get(
+  "package-module",
+  "/:package/version/:version/module/:module",
+  async (ctx, next) => {
+    const packageName = ctx.params.package;
+    const version = ctx.params.version;
+    const moduleName = ctx.params.module;
 
-  const packageInfo = await dbPackage.getPackageOverview(packageName, version);
-  const docs = JSON.parse(packageInfo.docs);
+    const packageInfo = await dbPackage.getPackageOverview(
+      packageName,
+      version
+    );
+    const docs = JSON.parse(packageInfo.docs);
 
-  const moduleInfo = docs.find((mod) => mod.name === moduleName);
-  if (moduleInfo == null) {
-    ctx.status = 404;
-    return;
+    const moduleInfo = docs.find((mod) => mod.name === moduleName);
+    if (moduleInfo == null) {
+      ctx.status = 404;
+      return;
+    }
+
+    const metadataObj = JSON.parse(packageInfo.metadata);
+    const exposedModules = prepareExposedModulesView(
+      packageName,
+      version,
+      metadataObj
+    );
+
+    const moduleDocumentation = prepareModuleDocumentation(moduleInfo);
+
+    views.render(ctx, {
+      html: () =>
+        views.packageModule({
+          packageName: packageName,
+          packageVersion: version,
+          packageOverviewLink: router.url("package-overview", {
+            package: packageName,
+            version: version,
+          }),
+          moduleName: moduleName,
+          moduleDocs: moduleDocumentation,
+          exposedModules: exposedModules,
+        }),
+      json: () => {
+        return moduleInfo;
+      },
+      text: () => moduleDocumentation,
+    });
   }
-
-  const metadataObj = JSON.parse(packageInfo.metadata);
-  const exposedModules = prepareExposedModulesView(
-    packageName,
-    version,
-    metadataObj
-  );
-
-  const moduleDocumentation = prepareModuleDocumentation(moduleInfo);
-
-  views.render(ctx, {
-    html: () =>
-      views.packageModule({
-        packageName: packageName,
-        packageVersion: version,
-        packageOverviewLink: packageOverviewLink(packageName, version),
-        moduleName: moduleName,
-        moduleDocs: moduleDocumentation,
-        exposedModules: exposedModules,
-      }),
-    json: () => {
-      return moduleInfo;
-    },
-    text: () => moduleDocumentation,
-  });
-});
+);
 
 function prepareModuleDocumentation(moduleInfo) {
   const docSplit = moduleInfo.comment.split("\n@docs");

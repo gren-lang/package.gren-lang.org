@@ -5,11 +5,11 @@ let packageImportJobTask = null;
 let rateLimitTask = null;
 
 export async function init() {
-    packageImportJobTask = await dbPackageImportJob.initRecurringTask();
-    rateLimitTask = rateLimit.initRecurringTask();
+  packageImportJobTask = await dbPackageImportJob.initRecurringTask();
+  rateLimitTask = rateLimit.initRecurringTask();
 }
 
 export function stop() {
-    clearInterval(packageImportJobTask);
-    clearInterval(rateLimitTask);
+  clearInterval(packageImportJobTask);
+  clearInterval(rateLimitTask);
 }

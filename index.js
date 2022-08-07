@@ -8,23 +8,23 @@ import { port } from "#src/config";
 import * as recurring from "#src/recurring_tasks";
 
 async function setup() {
-    await db.init();
-    await recurring.init();
-    setupServer();
+  await db.init();
+  await recurring.init();
+  setupServer();
 }
 
 let server;
 
 function setupServer() {
-    server = http.createServer({}, api.callback());
-    server.setTimeout(5000);
+  server = http.createServer({}, api.callback());
+  server.setTimeout(5000);
 
-    server.listen(port, () => {
-        log.info(`Server running on port ${port} using node ${process.version}`);
-    });
+  server.listen(port, () => {
+    log.info(`Server running on port ${port} using node ${process.version}`);
+  });
 
-    process.on("SIGINT", onTerminate);
-    process.on("SIGTERM", onTerminate);
+  process.on("SIGINT", onTerminate);
+  process.on("SIGTERM", onTerminate);
 }
 
 function onTerminate() {
