@@ -11,8 +11,8 @@ import * as log from "#src/log";
 import * as db from "#src/db";
 import * as views from "#src/views";
 
-import * as packageImportJobs from "#db/package_import_jobs";
-import * as packages from "#db/packages";
+import * as dbPackageImportJob from "#db/package_import_job";
+import * as dbPackage from "#db/package";
 
 export const router = new Router();
 
@@ -20,7 +20,7 @@ const execFile = util.promisify(childProcess.execFile);
 
 router.get("/jobs", async (ctx, next) => {
   try {
-    const rows = await packageImportJobs.getAllJobs();
+    const rows = await dbPackageImportJob.getAllJobs();
 
     views.render(ctx, {
       html: () => views.packageJobs({ jobs: rows }),
@@ -48,11 +48,11 @@ router.post("/init", async (ctx, next) => {
   const githubUrl = githubUrlForName(packageName);
 
   try {
-    await packageImportJobs.registerJob(
+    await dbPackageImportJob.registerJob(
       packageName,
       githubUrl,
       "*",
-      packageImportJobs.stepFindMissingVersions
+      dbPackageImportJob.stepFindMissingVersions
     );
 
     log.info(`Begin import of ${packageName}`);
@@ -87,7 +87,7 @@ async function scheduledJob() {
 }
 
 async function whenScheduled() {
-  const job = await packageImportJobs.getInProgressJob();
+  const job = await dbPackageImportJob.getInProgressJob();
 
   if (job) {
     log.info("Executing job", job);
@@ -97,21 +97,21 @@ async function whenScheduled() {
 
 async function performJob(job) {
   switch (job.step) {
-    case packageImportJobs.stepFindMissingVersions:
+    case dbPackageImportJob.stepFindMissingVersions:
       await findMissingVersions(job);
       break;
-    case packageImportJobs.stepCloneRepo:
+    case dbPackageImportJob.stepCloneRepo:
       await cloneRepo(job);
       break;
-    case packageImportJobs.stepBuildDocs:
+    case dbPackageImportJob.stepBuildDocs:
       await buildDocs(job);
       break;
-    case packageImportJobs.stepCleanup:
+    case dbPackageImportJob.stepCleanup:
       await removeJobWorkingDir(job);
       break;
     default:
       log.error(`Don't know what to do with job at step ${job.step}`, job);
-      await packageImportJobs.stopJob(job.id, "Don't know what to do...");
+      await dbPackageImportJob.stopJob(job.id, "Don't know what to do...");
       break;
   }
 }
@@ -122,7 +122,7 @@ async function findMissingVersions(job) {
       timeout: 3000,
     });
 
-    const alreadyImportedVersionRows = await packages.existingVersions(
+    const alreadyImportedVersionRows = await dbPackage.existingVersions(
       job.name
     );
 
@@ -145,11 +145,11 @@ async function findMissingVersions(job) {
 
     for (let tag of entries) {
       try {
-        await packageImportJobs.registerJob(
+        await dbPackageImportJob.registerJob(
           job.name,
           job.url,
           tag,
-          packageImportJobs.stepCloneRepo
+          dbPackageImportJob.stepCloneRepo
         );
       } catch (error) {
         // 19: SQLITE_CONSTRAINT, means row already exists
@@ -164,16 +164,16 @@ async function findMissingVersions(job) {
       }
     }
 
-    await packageImportJobs.stopJob(job.id, "Completed successfully");
+    await dbPackageImportJob.stopJob(job.id, "Completed successfully");
   } catch (error) {
     if (error.code === 128) {
-      await packageImportJobs.stopJob(
+      await dbPackageImportJob.stopJob(
         job.id,
         `Repository doesn\'t exist: ${job.url}`
       );
     } else {
       log.error("Unknown error when finding tags for remote git repo", error);
-      await packageImportJobs.scheduleJobForRetry(
+      await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
         "Unknown error when finding tags for git repo."
@@ -210,10 +210,10 @@ async function cloneRepo(job) {
       job
     );
 
-    await packageImportJobs.advanceJob(job.id, packageImportJobs.stepBuildDocs);
+    await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepBuildDocs);
   } catch (error) {
     log.error("Unknown error when cloning remote git repo", error);
-    await packageImportJobs.scheduleJobForRetry(
+    await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
       "Unknown error when cloning git repo."
@@ -257,7 +257,7 @@ async function buildDocs(job) {
     try {
       await db.run("BEGIN");
 
-      await packages.registerDocs(
+      await dbPackage.registerDocs(
         job.name,
         job.url,
         job.version,
@@ -268,7 +268,7 @@ async function buildDocs(job) {
 
       const metadataObj = JSON.parse(metadata);
 
-      await packages.registerForSearch(
+      await dbPackage.registerForSearch(
         job.name,
         job.version,
         metadataObj.summary
@@ -291,7 +291,7 @@ async function buildDocs(job) {
       job
     );
 
-    await packageImportJobs.advanceJob(job.id, packageImportJobs.stepCleanup);
+    await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepCleanup);
   } catch (error) {
     // 19: SQLITE_CONSTRAINT, means row already exists
     if (error.errno === 19) {
@@ -299,7 +299,7 @@ async function buildDocs(job) {
         `Package ${job.name} at version ${job.version} already exist in our system`,
         job
       );
-      await packageImportJobs.advanceJob(job.id, packageImportJobs.stepCleanup);
+      await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepCleanup);
       return;
     }
 
@@ -312,7 +312,7 @@ async function buildDocs(job) {
 
     if (compilerError.title === "NO gren.json FILE") {
       log.error("Package doesn't contain gren.json file", compilerError);
-      await packageImportJobs.scheduleJobForRetry(
+      await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
         "Package doesn't contain gren.json file"
@@ -322,14 +322,14 @@ async function buildDocs(job) {
         "Package does not support current Gren compiler",
         compilerError
       );
-      await packageImportJobs.scheduleJobForRetry(
+      await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
         "Package doesn't support current Gren compiler."
       );
     } else {
       log.error("Unknown error when compiling project", compilerError);
-      await packageImportJobs.scheduleJobForRetry(
+      await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
         "Unknown error when compiling project."
@@ -349,10 +349,10 @@ async function removeJobWorkingDir(job) {
       job
     );
 
-    await packageImportJobs.stopJob(job.id, "Import complete");
+    await dbPackageImportJob.stopJob(job.id, "Import complete");
   } catch (error) {
     log.error("Unknown error when trying to cleanup after import.", error);
-    await packageImportJobs.scheduleJobForRetry(
+    await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
       "Unknown error when trying to cleanup after import."

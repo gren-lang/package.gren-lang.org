@@ -4,7 +4,7 @@ import { default as MarkdownIt } from "markdown-it";
 
 import * as views from "#src/views";
 
-import * as packages from "#db/packages";
+import * as dbPackage from "#db/package";
 
 export const router = new Router();
 
@@ -12,7 +12,7 @@ const markdown = new MarkdownIt();
 
 router.get("/search", async (ctx, next) => {
   const query = ctx.request.query.query;
-  const results = await packages.searchForPackage(query);
+  const results = await dbPackage.searchForPackage(query);
 
   views.render(ctx, {
     html: () => views.packageSearch({ query, results }),
@@ -23,7 +23,7 @@ router.get("/search", async (ctx, next) => {
 
 router.get("/:package", async (ctx, next) => {
   const packageName = ctx.params.package;
-  const versionRowsOfPackage = await packages.existingVersions(packageName);
+  const versionRowsOfPackage = await dbPackage.existingVersions(packageName);
   const versionsOfPackage = versionRowsOfPackage.map((row) => row.version);
 
   if (versionsOfPackage.length === 0) {
@@ -43,7 +43,7 @@ router.get("/:package/version/:version/overview", async (ctx, next) => {
   const packageName = ctx.params.package;
   const version = ctx.params.version;
 
-  const packageInfo = await packages.getPackageOverview(packageName, version);
+  const packageInfo = await dbPackage.getPackageOverview(packageName, version);
   const renderedMarkdown = markdown.render(packageInfo.readme);
 
   const metadataObj = JSON.parse(packageInfo.metadata);
@@ -109,7 +109,7 @@ router.get("/:package/version/:version/module/:module", async (ctx, next) => {
   const version = ctx.params.version;
   const moduleName = ctx.params.module;
 
-  const packageInfo = await packages.getPackageOverview(packageName, version);
+  const packageInfo = await dbPackage.getPackageOverview(packageName, version);
   const docs = JSON.parse(packageInfo.docs);
 
   const moduleInfo = docs.find((mod) => mod.name === moduleName);

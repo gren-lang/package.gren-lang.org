@@ -3,8 +3,8 @@ import sqlite3 from "sqlite3";
 
 import * as log from "#src/log";
 
-import * as packageImportJobs from "#db/package_import_jobs";
-import * as packages from "#db/packages";
+import * as dbPackageImportJob from "#db/package_import_job";
+import * as dbPackage from "#db/package";
 import { dbPath } from "#src/config";
 
 sqlite3.verbose();
@@ -26,8 +26,8 @@ PRAGMA foreign_keys = on;
 `);
 
     const migrations = [].concat(
-      packageImportJobs.migrations,
-      packages.migrations
+      dbPackageImportJob.migrations,
+      dbPackage.migrations
     );
 
     for (let migration of migrations) {
