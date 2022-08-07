@@ -17,7 +17,7 @@ export async function sendNewPackageNotification(name, version, summary) {
       content: `
 Version ${version} was just published.
 
-            ${summary}
+${summary}
 `,
     });
   } catch (err) {}
