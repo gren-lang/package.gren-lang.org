@@ -5,20 +5,32 @@ import * as db from "#src/db";
 import { api } from "#src/api";
 import * as log from "#src/log";
 import { port } from "#src/config";
+import * as recurring from "#src/recurring_tasks";
 
-const server = http.createServer({}, api.callback());
+async function setup() {
+    await db.init();
+    await recurring.init();
+    setupServer();
+}
 
-server.setTimeout(5000);
+let server;
 
-server.listen(port, () => {
-  log.info(`Server running on port ${port} using node ${process.version}`);
-});
+function setupServer() {
+    server = http.createServer({}, api.callback());
+    server.setTimeout(5000);
 
-process.on("SIGINT", onTerminate);
-process.on("SIGTERM", onTerminate);
+    server.listen(port, () => {
+        log.info(`Server running on port ${port} using node ${process.version}`);
+    });
+
+    process.on("SIGINT", onTerminate);
+    process.on("SIGTERM", onTerminate);
+}
 
 function onTerminate() {
   log.info("Termination signal received, shutting down...");
+
+  recurring.stop();
 
   server.close(() => {
     log.info("Server stopped");
@@ -34,3 +46,5 @@ function onTerminate() {
     });
   });
 }
+
+setup();

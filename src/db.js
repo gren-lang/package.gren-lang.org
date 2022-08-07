@@ -18,7 +18,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
   log.info(`Opened database ${dbPath}`);
 });
 
-async function initDb() {
+export async function init() {
   try {
     await run(`
 PRAGMA busy_timeout = 2000;
@@ -38,8 +38,6 @@ PRAGMA foreign_keys = on;
     process.exit(1);
   }
 }
-
-initDb();
 
 export function run(stmt, params) {
   return new Promise((resolve, reject) => {
