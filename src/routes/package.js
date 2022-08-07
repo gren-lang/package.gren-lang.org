@@ -7,12 +7,10 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import * as gren from "gren-compiler-library";
 import { default as MarkdownIt } from "markdown-it";
-import { default as zulip } from "zulip-js";
 
 import * as log from "#src/log";
 import * as db from "#src/db";
 import * as views from "#src/views";
-import * as config from "#src/config";
 
 import * as packageImportJobs from "#db/package_import_jobs";
 import * as packages from "#db/packages";
@@ -502,21 +500,11 @@ async function buildDocs(job) {
 
       await db.run("COMMIT");
 
-      try {
-        const conn = await zulip(config.zulip);
-        const val = await conn.messages.send({
-          to: "packages",
-          type: "stream",
-          subject: job.name,
-          content: `
-Version ${job.version} was just published.
-
-${metadataObj.summary}
-
-Repo: ${job.url}
-`,
-        });
-      } catch (err) {}
+      await zulip.sendNewPackageNotification(
+        job.name,
+        job.version,
+        metadataObj.summary
+      );
     } catch (err) {
       await db.run("ROLLBACK");
       throw err;
