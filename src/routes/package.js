@@ -36,10 +36,12 @@ router.get("package-redirect", "/:package", async (ctx, next) => {
   const latestVersion = versionsOfPackage.sort(semver.rcompare)[0];
 
   ctx.status = 303;
-  ctx.redirect("package-overview", {
-    package: packageName,
-    version: latestVersion,
-  });
+  ctx.redirect(
+    router.url("package-overview", {
+      package: packageName,
+      version: latestVersion,
+    })
+  );
 });
 
 router.get(

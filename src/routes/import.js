@@ -10,6 +10,7 @@ import * as gren from "gren-compiler-library";
 import * as log from "#src/log";
 import * as db from "#src/db";
 import * as views from "#src/views";
+import * as zulip from "#src/zulip";
 
 import * as dbPackageImportJob from "#db/package_import_job";
 import * as dbPackage from "#db/package";
@@ -281,6 +282,7 @@ async function buildDocs(job) {
 
       await db.run("COMMIT");
 
+      // TODO: Move to seperate step
       await zulip.sendNewPackageNotification(
         job.name,
         job.version,
