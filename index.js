@@ -27,7 +27,15 @@ function setupServer() {
   process.on("SIGTERM", onTerminate);
 }
 
+let shuttingDown = false;
+
 function onTerminate() {
+  if (shuttingDown) {
+    log.info("Shutdown is alread in progress, please wait...");
+    return;
+  }
+
+  shuttingDown = true;
   log.info("Termination signal received, shutting down...");
 
   recurring.stop();

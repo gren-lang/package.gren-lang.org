@@ -14,7 +14,9 @@ import * as views from "#src/views";
 import * as dbPackageImportJob from "#db/package_import_job";
 import * as dbPackage from "#db/package";
 
-export const router = new Router();
+export const router = new Router({
+  prefix: "/import",
+});
 
 const execFile = util.promisify(childProcess.execFile);
 

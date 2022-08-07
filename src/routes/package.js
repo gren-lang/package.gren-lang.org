@@ -6,7 +6,9 @@ import * as views from "#src/views";
 
 import * as dbPackage from "#db/package";
 
-export const router = new Router();
+export const router = new Router({
+  prefix: "/package",
+});
 
 const markdown = new MarkdownIt();
 
