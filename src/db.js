@@ -5,11 +5,7 @@ import * as log from "#src/log";
 
 import * as packageImportJobs from "#db/package_import_jobs";
 import * as packages from "#db/packages";
-
-const dbPathEnvKey = "GREN_PACKAGES_DATABASE";
-const dbPath = process.env[dbPathEnvKey]
-  ? process.env[dbPathEnvKey]
-  : ":memory:";
+import { dbPath } from "#src/config";
 
 sqlite3.verbose();
 

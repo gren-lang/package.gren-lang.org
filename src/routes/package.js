@@ -12,6 +12,7 @@ import { default as zulip } from "zulip-js";
 import * as log from "#src/log";
 import * as db from "#src/db";
 import * as views from "#src/views";
+import * as config from "#src/config";
 
 import * as packageImportJobs from "#db/package_import_jobs";
 import * as packages from "#db/packages";
@@ -20,12 +21,6 @@ export const router = new Router();
 
 const markdown = new MarkdownIt();
 const execFile = util.promisify(childProcess.execFile);
-
-const zulipConfig = {
-  username: process.env["GREN_ZULIP_USERNAME"],
-  apiKey: process.env["GREN_ZULIP_APIKEY"],
-  realm: process.env["GREN_ZULIP_REALM"],
-};
 
 router.get("/jobs", async (ctx, next) => {
   try {
@@ -508,7 +503,7 @@ async function buildDocs(job) {
       await db.run("COMMIT");
 
       try {
-        const conn = await zulip(zulipConfig);
+        const conn = await zulip(config.zulip);
         const val = await conn.messages.send({
           to: "packages",
           type: "stream",

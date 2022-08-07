@@ -4,8 +4,7 @@ import process from "process";
 import * as db from "#src/db";
 import { api } from "#src/api";
 import * as log from "#src/log";
-
-const port = 3000;
+import { port } from "#src/config";
 
 const server = http.createServer({}, api.callback());
 
