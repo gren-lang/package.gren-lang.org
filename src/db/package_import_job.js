@@ -114,7 +114,7 @@ WHERE id = $id
 `,
     {
       $id: id,
-      $message: msg
+      $message: msg,
     }
   );
 }

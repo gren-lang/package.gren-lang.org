@@ -43,32 +43,35 @@ CREATE TABLE IF NOT EXISTS package_module_union (
     id INTEGER PRIMARY KEY,
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    comment TEXT NOT NULL,
-    metadata TEXT NOT NULL
+    metadata TEXT NOT NULL,
+    comment TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_alias (
     id INTEGER PRIMARY KEY,
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    comment TEXT NOT NULL,
-    metadata TEXT NOT NULL
+    type TEXT NOT NULL,
+    metadata TEXT NOT NULL,
+    comment TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_value (
     id INTEGER PRIMARY KEY,
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    comment TEXT NOT NULL,
-    type TEXT NOT NULL
+    type TEXT NOT NULL,
+    comment TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_binop (
     id INTEGER PRIMARY KEY,
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    comment TEXT NOT NULL,
-    metadata TEXT NOT NULL
+    type TEXT NOT NULL,
+    associativity TEXT NOT NULL,
+    precedence INTEGER NOT NULL,
+    comment TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE VIRTUAL TABLE IF NOT EXISTS package_fts USING FTS5 (
@@ -128,7 +131,7 @@ RETURNING *
       $minorVersion: parsedVersion.minor,
       $patchVersion: parsedVersion.patch,
       $license: license,
-      $grenVersionRange: grenVersionRange
+      $grenVersionRange: grenVersionRange,
     }
   );
 }
@@ -148,8 +151,8 @@ INSERT INTO package_description (
 `,
     {
       $versionId: versionId,
-      $summary: summary,
-      $readme: readme
+      $summary: summary.trim(),
+      $readme: readme.trim(),
     }
   );
 }
@@ -171,7 +174,122 @@ RETURNING *
     {
       $versionId: versionId,
       $name: name,
-      $comment: comment
+      $comment: comment.trim(),
+    }
+  );
+}
+
+export function registerModuleUnion(moduleId, name, comment, args, cases) {
+  return db.run(
+    `
+INSERT INTO package_module_union (
+    module_id,
+    name,
+    comment,
+    metadata
+) VALUES (
+    $moduleId,
+    $name,
+    $comment,
+    $metadata
+)
+`,
+    {
+      $moduleId: moduleId,
+      $name: name,
+      $comment: comment.trim(),
+      $metadata: JSON.stringify({
+        args: args,
+        cases: cases,
+      }),
+    }
+  );
+}
+
+export function registerModuleAlias(moduleId, name, comment, args, type) {
+  return db.run(
+    `
+INSERT INTO package_module_alias (
+    module_id,
+    name,
+    comment,
+    type,
+    metadata
+) VALUES (
+    $moduleId,
+    $name,
+    $comment,
+    $type,
+    $metadata
+)
+`,
+    {
+      $moduleId: moduleId,
+      $name: name,
+      $comment: comment.trim(),
+      $type: type,
+      $metadata: JSON.stringify({ args: args }),
+    }
+  );
+}
+
+export function registerModuleValue(moduleId, name, comment, type) {
+  return db.run(
+    `
+INSERT INTO package_module_value (
+    module_id,
+    name,
+    comment,
+    type
+) VALUES (
+    $moduleId,
+    $name,
+    $comment,
+    $type
+)
+`,
+    {
+      $moduleId: moduleId,
+      $name: name,
+      $comment: comment.trim(),
+      $type: type,
+    }
+  );
+}
+
+export function registerModuleBinop(
+  moduleId,
+  name,
+  comment,
+  type,
+  associativity,
+  precedence
+) {
+  return db.run(
+    `
+INSERT INTO package_module_binop (
+    module_id,
+    name,
+    comment,
+    type,
+    associativity,
+    precedence
+) VALUES (
+    $moduleId,
+    $name,
+    $comment,
+    $type,
+    $associativity,
+    $precedence
+)
+`,
+    {
+      $moduleId: moduleId,
+      $name: name,
+      $comment: comment.trim(),
+      $type: type,
+      $associativity: associativity,
+      $precedence: precedence,
     }
   );
 }

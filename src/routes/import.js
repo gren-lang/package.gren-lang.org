@@ -94,7 +94,7 @@ async function whenScheduled() {
 
   if (job) {
     log.info("Executing job", job);
-    await dbPackageImportJob.setMessage(job.id, 'Executing...');
+    await dbPackageImportJob.setMessage(job.id, "Executing...");
     await performJob(job);
   }
 }
@@ -126,9 +126,7 @@ async function findMissingVersions(job) {
       timeout: 3000,
     });
 
-    const alreadyImportedVersions = await dbPackage.existingVersions(
-      job.name
-    );
+    const alreadyImportedVersions = await dbPackage.existingVersions(job.name);
 
     const entries = stdout
       .trim()
@@ -245,9 +243,12 @@ async function buildDocs(job) {
       timeout: 30_000,
     });
 
-    const metadataStr = await fs.readFile(path.join(localRepoPath, "gren.json"), {
-      encoding: "utf-8",
-    });
+    const metadataStr = await fs.readFile(
+      path.join(localRepoPath, "gren.json"),
+      {
+        encoding: "utf-8",
+      }
+    );
 
     const readmeStr = await fs.readFile(path.join(localRepoPath, "README.md"), {
       encoding: "utf-8",
@@ -263,13 +264,13 @@ async function buildDocs(job) {
     const pkg = await dbPackage.upsert(job.name, job.url);
 
     try {
-      //await db.run("BEGIN");
+      await db.run("BEGIN");
 
       const versioned = await dbPackage.registerVersion(
         pkg.id,
         metadataObj.version,
         metadataObj.license,
-        metadataObj['gren-version']
+        metadataObj["gren-version"]
       );
 
       // TODO: Could this be the fts table?
@@ -281,10 +282,50 @@ async function buildDocs(job) {
 
       for (let module of modules) {
         const moduleRow = await dbPackage.registerModule(
-            versioned.id,
-            module.name,
-            module.comment
+          versioned.id,
+          module.name,
+          module.comment
         );
+
+        for (let union of module.unions) {
+          await dbPackage.registerModuleUnion(
+            moduleRow.id,
+            union.name,
+            union.comment,
+            union.args,
+            union.cases
+          );
+        }
+
+        for (let alias of module.aliases) {
+          await dbPackage.registerModuleAlias(
+            moduleRow.id,
+            alias.name,
+            alias.comment,
+            alias.args,
+            alias.type
+          );
+        }
+
+        for (let value of module.values) {
+          await dbPackage.registerModuleValue(
+            moduleRow.id,
+            value.name,
+            value.comment,
+            value.type
+          );
+        }
+
+        for (let binop of module.binops) {
+          await dbPackage.registerModuleBinop(
+            moduleRow.id,
+            binop.name,
+            binop.comment,
+            binop.type,
+            binop.associativity,
+            binop.precedence
+          );
+        }
       }
 
       // TODO: Move to seperate step
@@ -294,7 +335,7 @@ async function buildDocs(job) {
         metadataObj.summary
       );
 
-      //await db.run("COMMIT");
+      await db.run("COMMIT");
 
       // TODO: Move to seperate step
       await zulip.sendNewPackageNotification(
@@ -303,7 +344,8 @@ async function buildDocs(job) {
         metadataObj.summary
       );
     } catch (err) {
-      //await db.run("ROLLBACK");
+      // TODO: Need better error handling
+      await db.run("ROLLBACK");
       throw err;
     }
 
