@@ -25,15 +25,12 @@ router.get("search", "/search", async (ctx, next) => {
 
 router.get("package-redirect", "/:package", async (ctx, next) => {
   const packageName = ctx.params.package;
-  const versionRowsOfPackage = await dbPackage.existingVersions(packageName);
-  const versionsOfPackage = versionRowsOfPackage.map((row) => row.version);
+  const latestVersion = await dbPackage.latestVersion(packageName);
 
-  if (versionsOfPackage.length === 0) {
+  if (latestVersion == null) {
     ctx.status = 404;
     return;
   }
-
-  const latestVersion = versionsOfPackage.sort(semver.rcompare)[0];
 
   ctx.status = 303;
   ctx.redirect(

@@ -310,6 +310,24 @@ WHERE package.name = $name
   return rows.map((row) => row.version);
 }
 
+export async function latestVersion(name) {
+  const row = await db.queryOne(
+    `
+SELECT package_version.version
+FROM package_version
+JOIN package ON package.id = package_version.package_id
+WHERE package.name = $name
+ORDER BY major_version DESC, minor_version DESC, patch_version DESC
+LIMIT 1
+`,
+    {
+      $name: name,
+    }
+  );
+
+  return row.version;
+}
+
 export function getPackageOverview(name, version) {
   return db.queryOne(
     `
