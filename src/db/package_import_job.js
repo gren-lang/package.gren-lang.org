@@ -3,14 +3,14 @@ import * as log from "#src/log";
 
 export const migrations = [
   `
-CREATE TABLE IF NOT EXISTS package_import_jobs (
+CREATE TABLE IF NOT EXISTS package_import_job (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     version TEXT NOT NULL,
     step TEXT NOT NULL,
-    in_progress INT NOT NULL,
-    retry INT NOT NULL,
+    in_progress INTEGER NOT NULL,
+    retry INTEGER NOT NULL,
     process_after_epoch INTEGER NOT NULL,
     message TEXT NOT NULL,
     UNIQUE(name, version)
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
 export function getAllJobs() {
   return db.query(
     `
-SELECT * FROM package_import_jobs
+SELECT * FROM package_import_job
 `,
     {}
   );
@@ -31,10 +31,10 @@ export function getInProgressJob() {
   return db.queryOne(
     `
 SELECT *
-FROM package_import_jobs
+FROM package_import_job
 WHERE in_progress = TRUE
 AND process_after_epoch < unixepoch('now')
-ORDER BY process_after
+ORDER BY process_after_epoch
 LIMIT 1
 `,
     {}
@@ -49,7 +49,7 @@ export const stepCleanup = "CLEANUP";
 export function registerJob(name, url, version, step) {
   return db.run(
     `
-INSERT INTO package_import_jobs (
+INSERT INTO package_import_job (
     name,
     url,
     version,
@@ -89,7 +89,7 @@ export function scheduleJobForRetry(id, numberOfTimesRetried, reason) {
 
   return db.run(
     `
-UPDATE package_import_jobs
+UPDATE package_import_job
 SET
     message = $reason,
     retry = retry + 1,
@@ -105,10 +105,24 @@ WHERE
   );
 }
 
+export function setMessage(id, msg) {
+  return db.run(
+    `
+UPDATE package_import_job
+SET message = $message
+WHERE id = $id
+`,
+    {
+      $id: id,
+      $message: msg
+    }
+  );
+}
+
 export function advanceJob(id, nextStep) {
   return db.run(
     `
-UPDATE package_import_jobs
+UPDATE package_import_job
 SET
     step = $nextStep,
     retry = 0,
@@ -127,7 +141,7 @@ WHERE
 export function stopJob(id, reason) {
   return db.run(
     `
-UPDATE package_import_jobs
+UPDATE package_import_job
 SET
     in_progress = FALSE,
     message = $reason,
@@ -145,7 +159,7 @@ WHERE
 async function cleanup() {
   const changes = await db.run(
     `
-DELETE FROM package_import_jobs
+DELETE FROM package_import_job
 WHERE in_progress = FALSE
 AND process_after_epoch < unixepoch('now') - 60
 `,

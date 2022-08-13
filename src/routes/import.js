@@ -94,6 +94,7 @@ async function whenScheduled() {
 
   if (job) {
     log.info("Executing job", job);
+    await dbPackageImportJob.setMessage(job.id, 'Executing...');
     await performJob(job);
   }
 }
@@ -125,12 +126,8 @@ async function findMissingVersions(job) {
       timeout: 3000,
     });
 
-    const alreadyImportedVersionRows = await dbPackage.existingVersions(
+    const alreadyImportedVersions = await dbPackage.existingVersions(
       job.name
-    );
-
-    const alreadyImportedVersions = alreadyImportedVersionRows.map(
-      (row) => row.version
     );
 
     const entries = stdout
@@ -248,39 +245,41 @@ async function buildDocs(job) {
       timeout: 30_000,
     });
 
-    const metadata = await fs.readFile(path.join(localRepoPath, "gren.json"), {
+    const metadataStr = await fs.readFile(path.join(localRepoPath, "gren.json"), {
       encoding: "utf-8",
     });
 
-    const readme = await fs.readFile(path.join(localRepoPath, "README.md"), {
+    const readmeStr = await fs.readFile(path.join(localRepoPath, "README.md"), {
       encoding: "utf-8",
     });
 
-    const docs = await fs.readFile(path.join(localRepoPath, "docs.json"), {
+    const docsStr = await fs.readFile(path.join(localRepoPath, "docs.json"), {
       encoding: "utf-8",
     });
+
+    const metadataObj = JSON.parse(metadataStr);
+    const docsObj = JSON.parse(docsStr);
+
+    const pkg = await dbPackage.upsert(job.name, job.url);
 
     try {
-      await db.run("BEGIN");
+      //await db.run("BEGIN");
 
-      await dbPackage.registerDocs(
-        job.name,
-        job.url,
-        job.version,
-        metadata,
-        readme,
-        docs
+      const versioned = await dbPackage.registerVersion(
+        pkg.id,
+        metadataObj.version,
+        metadataObj.license,
+        metadataObj['gren-version']
       );
 
-      const metadataObj = JSON.parse(metadata);
-
+      // TODO: Move to seperate step
       await dbPackage.registerForSearch(
         job.name,
         job.version,
         metadataObj.summary
       );
 
-      await db.run("COMMIT");
+      //await db.run("COMMIT");
 
       // TODO: Move to seperate step
       await zulip.sendNewPackageNotification(
@@ -289,7 +288,7 @@ async function buildDocs(job) {
         metadataObj.summary
       );
     } catch (err) {
-      await db.run("ROLLBACK");
+      //await db.run("ROLLBACK");
       throw err;
     }
 

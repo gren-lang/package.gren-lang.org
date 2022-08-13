@@ -6,62 +6,65 @@ import * as log from "#src/log";
 export const migrations = [
   `
 CREATE TABLE IF NOT EXISTS package (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     url TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_version (
-    id INT PRIMARY KEY,
-    package_id INT REFERENCES package(id) ON DELETE CASCADE,
-    version TEXT NOT NULL,
+    id INTEGER PRIMARY KEY,
+    package_id INTEGER REFERENCES package(id) ON DELETE CASCADE,
+    major_version INTEGER NOT NULL,
+    minor_version INTEGER NOT NULL,
+    patch_version INTEGER NOT NULL,
+    license TEXT NOT NULL,
     gren_compatability TEXT NOT NULL,
-    imported_epoch INT NOT NULL,
-    UNIQUE(package_id, version)
+    imported_epoch INTEGER NOT NULL,
+    UNIQUE(package_id, major_version, minor_version, patch_version)
 ) STRICT;`,
   `
-CREATE TABLE IF NOT EXISTS package_readme (
-    id INT PRIMARY KEY,
-    package_version INT REFERENCES package_version(id) ON DELETE CASCADE UNIQUE,
+CREATE TABLE IF NOT EXISTS package_description (
+    id INTEGER PRIMARY KEY,
+    package_version INTEGER REFERENCES package_version(id) ON DELETE CASCADE UNIQUE,
     summary TEXT NOT NULL,
     readme TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module (
-    id INT PRIMARY KEY,
-    package_version INT REFERENCES package_version(id) ON DELETE CASCADE,
+    id INTEGER PRIMARY KEY,
+    package_version INTEGER REFERENCES package_version(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     UNIQUE(package_version, name)
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_union (
-    id INT PRIMARY KEY,
-    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    id INTEGER PRIMARY KEY,
+    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     metadata TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_alias (
-    id INT PRIMARY KEY,
-    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    id INTEGER PRIMARY KEY,
+    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     metadata TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_value (
-    id INT PRIMARY KEY,
-    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    id INTEGER PRIMARY KEY,
+    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     type TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_binop (
-    id INT PRIMARY KEY,
-    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    id INTEGER PRIMARY KEY,
+    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     metadata TEXT NOT NULL
@@ -75,56 +78,85 @@ CREATE VIRTUAL TABLE IF NOT EXISTS package_fts USING FTS5 (
 );`,
 ];
 
-export function registerDocs(name, url, version, metadata, readme, docs) {
-  return db.run(
+export function upsert(name, url) {
+  return db.queryOne(
     `
-INSERT INTO packages (
+INSERT INTO package (
     name,
-    version,
-    url,
-    imported,
-    metadata,
-    readme,
-    docs
+    url
 ) VALUES (
     $name,
-    $version,
-    $url,
-    datetime(),
-    $metadata,
-    $readme,
-    $docs
-)
+    $url
+) ON CONFLICT (name) DO
+UPDATE SET name = $name
+RETURNING *
 `,
     {
       $name: name,
       $url: url,
-      $version: version,
-      $metadata: metadata,
-      $readme: readme,
-      $docs: docs,
     }
   );
 }
 
-export function existingVersions(name) {
-  return db.query(
+export function registerVersion(pkgId, version, license, grenVersionRange) {
+  const parsedVersion = new semver.SemVer(version);
+  return db.run(
     `
-SELECT version
-FROM packages
-WHERE name = $name
+INSERT INTO package_version (
+    package_id,
+    major_version,
+    minor_version,
+    patch_version,
+    license,
+    gren_compatability,
+    imported_epoch
+) VALUES (
+    $pkgId,
+    $majorVersion,
+    $minorVersion,
+    $patchVersion,
+    $license,
+    $grenVersionRange,
+    unixepoch('now')
+)
+`,
+    {
+      $pkgId: pkgId,
+      $majorVersion: parsedVersion.major,
+      $minorVersion: parsedVersion.minor,
+      $patchVersion: parsedVersion.patch,
+      $license: license,
+      $grenVersionRange: grenVersionRange
+    }
+  );
+}
+
+export async function existingVersions(name) {
+  const rows = await db.query(
+    `
+SELECT
+    package_version.major_version,
+    package_version.minor_version,
+    package_version.patch_version
+FROM package_version
+JOIN package ON package.id = package_version.package_id
+WHERE package.name = $name
 `,
     {
       $name: name,
     }
   );
+
+  return rows.map((row) => {
+    return `${row.major_version}.${row.minor_version}.${row.patch_version}`
+  });
 }
 
 export function getPackageOverview(name, version) {
   return db.queryOne(
     `
 SELECT *
-FROM packages
+FROM package
 WHERE name = $name
 AND version = $version
 LIMIT 1
@@ -150,7 +182,7 @@ function getLatestSearchVersion(name) {
   return db.queryOne(
     `
 SELECT rowid, version
-FROM packages_fts
+FROM package_fts
 WHERE name = $name
 LIMIT 1
 `,
@@ -163,7 +195,7 @@ LIMIT 1
 function insertSearchData(name, version, summary) {
   return db.run(
     `
-INSERT INTO packages_fts (name, version, summary)
+INSERT INTO package_fts (name, version, summary)
 VALUES ($name, $version, $summary)
 `,
     {
@@ -177,7 +209,7 @@ VALUES ($name, $version, $summary)
 function updateSearchData(rowid, version, summary) {
   return db.run(
     `
-UPDATE packages_fts
+UPDATE package_fts
 SET
     version = $version,
     summary = $summary
@@ -195,7 +227,7 @@ export function searchForPackage(query) {
   return db.query(
     `
 SELECT name, version, summary
-FROM packages_fts($query)
+FROM package_fts($query)
 ORDER BY rank
 LIMIT 25
 `,
