@@ -13,10 +13,11 @@ CREATE TABLE IF NOT EXISTS package (
   `
 CREATE TABLE IF NOT EXISTS package_version (
     id INTEGER PRIMARY KEY,
-    package_id INTEGER REFERENCES package(id) ON DELETE CASCADE,
+    package_id INTEGER NOT NULL REFERENCES package(id) ON DELETE CASCADE,
     major_version INTEGER NOT NULL,
     minor_version INTEGER NOT NULL,
     patch_version INTEGER NOT NULL,
+    version TEXT GENERATED ALWAYS AS (major_version||'.'||minor_version||'.'||patch_version) VIRTUAL,
     license TEXT NOT NULL,
     gren_compatability TEXT NOT NULL,
     imported_epoch INTEGER NOT NULL,
@@ -25,22 +26,22 @@ CREATE TABLE IF NOT EXISTS package_version (
   `
 CREATE TABLE IF NOT EXISTS package_description (
     id INTEGER PRIMARY KEY,
-    package_version INTEGER REFERENCES package_version(id) ON DELETE CASCADE UNIQUE,
+    package_version_id INTEGER NOT NULL REFERENCES package_version(id) ON DELETE CASCADE UNIQUE,
     summary TEXT NOT NULL,
     readme TEXT NOT NULL
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module (
     id INTEGER PRIMARY KEY,
-    package_version INTEGER REFERENCES package_version(id) ON DELETE CASCADE,
+    package_version_id INTEGER NOT NULL REFERENCES package_version(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
-    UNIQUE(package_version, name)
+    UNIQUE(package_version_id, name)
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_union (
     id INTEGER PRIMARY KEY,
-    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
+    module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     metadata TEXT NOT NULL
@@ -48,7 +49,7 @@ CREATE TABLE IF NOT EXISTS package_module_union (
   `
 CREATE TABLE IF NOT EXISTS package_module_alias (
     id INTEGER PRIMARY KEY,
-    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
+    module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     metadata TEXT NOT NULL
@@ -56,7 +57,7 @@ CREATE TABLE IF NOT EXISTS package_module_alias (
   `
 CREATE TABLE IF NOT EXISTS package_module_value (
     id INTEGER PRIMARY KEY,
-    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
+    module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     type TEXT NOT NULL
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS package_module_value (
   `
 CREATE TABLE IF NOT EXISTS package_module_binop (
     id INTEGER PRIMARY KEY,
-    module_id INTEGER REFERENCES package_module(id) ON DELETE CASCADE,
+    module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     comment TEXT NOT NULL,
     metadata TEXT NOT NULL
@@ -100,7 +101,7 @@ RETURNING *
 
 export function registerVersion(pkgId, version, license, grenVersionRange) {
   const parsedVersion = new semver.SemVer(version);
-  return db.run(
+  return db.queryOne(
     `
 INSERT INTO package_version (
     package_id,
@@ -119,6 +120,7 @@ INSERT INTO package_version (
     $grenVersionRange,
     unixepoch('now')
 )
+RETURNING *
 `,
     {
       $pkgId: pkgId,
@@ -131,13 +133,31 @@ INSERT INTO package_version (
   );
 }
 
+export function registerDescription(versionId, summary, readme) {
+  return db.run(
+    `
+INSERT INTO package_description (
+    package_version_id,
+    summary,
+    readme
+) VALUES (
+    $versionId,
+    $summary,
+    $readme
+)
+`,
+    {
+      $versionId: versionId,
+      $summary: summary,
+      $readme: readme
+    }
+  );
+}
+
 export async function existingVersions(name) {
   const rows = await db.query(
     `
-SELECT
-    package_version.major_version,
-    package_version.minor_version,
-    package_version.patch_version
+SELECT package_version.version
 FROM package_version
 JOIN package ON package.id = package_version.package_id
 WHERE package.name = $name
@@ -147,9 +167,7 @@ WHERE package.name = $name
     }
   );
 
-  return rows.map((row) => {
-    return `${row.major_version}.${row.minor_version}.${row.patch_version}`
-  });
+  return rows.map((row) => row.version);
 }
 
 export function getPackageOverview(name, version) {
@@ -167,6 +185,8 @@ LIMIT 1
     }
   );
 }
+
+// SEARCH
 
 export async function registerForSearch(name, version, summary) {
   const existingSearchData = await getLatestSearchVersion(name);

@@ -272,6 +272,12 @@ async function buildDocs(job) {
         metadataObj['gren-version']
       );
 
+      await dbPackage.registerDescription(
+        versioned.id,
+        metadataObj.summary,
+        readmeStr
+      );
+
       // TODO: Move to seperate step
       await dbPackage.registerForSearch(
         job.name,
