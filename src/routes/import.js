@@ -258,7 +258,7 @@ async function buildDocs(job) {
     });
 
     const metadataObj = JSON.parse(metadataStr);
-    const docsObj = JSON.parse(docsStr);
+    const modules = JSON.parse(docsStr);
 
     const pkg = await dbPackage.upsert(job.name, job.url);
 
@@ -272,11 +272,20 @@ async function buildDocs(job) {
         metadataObj['gren-version']
       );
 
+      // TODO: Could this be the fts table?
       await dbPackage.registerDescription(
         versioned.id,
         metadataObj.summary,
         readmeStr
       );
+
+      for (let module of modules) {
+        const moduleRow = await dbPackage.registerModule(
+            versioned.id,
+            module.name,
+            module.comment
+        );
+      }
 
       // TODO: Move to seperate step
       await dbPackage.registerForSearch(

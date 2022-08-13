@@ -154,6 +154,28 @@ INSERT INTO package_description (
   );
 }
 
+export function registerModule(versionId, name, comment) {
+  return db.queryOne(
+    `
+INSERT INTO package_module (
+    package_version_id,
+    name,
+    comment
+) VALUES (
+    $versionId,
+    $name,
+    $comment
+)
+RETURNING *
+`,
+    {
+      $versionId: versionId,
+      $name: name,
+      $comment: comment
+    }
+  );
+}
+
 export async function existingVersions(name) {
   const rows = await db.query(
     `
