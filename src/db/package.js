@@ -34,7 +34,9 @@ CREATE TABLE IF NOT EXISTS package_description (
 CREATE TABLE IF NOT EXISTS package_module (
     id INTEGER PRIMARY KEY,
     package_version_id INTEGER NOT NULL REFERENCES package_version(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL,
     name TEXT NOT NULL,
+    category TEXT,
     comment TEXT NOT NULL,
     UNIQUE(package_version_id, name)
 ) STRICT;`,
@@ -157,16 +159,20 @@ INSERT INTO package_description (
   );
 }
 
-export function registerModule(versionId, name, comment) {
+export function registerModule(versionId, name, order, category, comment) {
   return db.queryOne(
     `
 INSERT INTO package_module (
     package_version_id,
     name,
+    sort_order,
+    category,
     comment
 ) VALUES (
     $versionId,
     $name,
+    $order,
+    $category,
     $comment
 )
 RETURNING *
@@ -174,6 +180,8 @@ RETURNING *
     {
       $versionId: versionId,
       $name: name,
+      $order: order,
+      $category: category,
       $comment: comment.trim(),
     }
   );
@@ -328,14 +336,36 @@ LIMIT 1
   return row.version;
 }
 
-export function getPackageOverview(name, version) {
-  return db.queryOne(
+export async function getReadme(name, version) {
+  const row = await db.queryOne(
     `
-SELECT *
-FROM package
-WHERE name = $name
-AND version = $version
+SELECT package_description.readme
+FROM package_description
+JOIN package_version ON package_description.package_version_id = package_version.id
+JOIN package ON package_version.package_id = package.id
+WHERE package.name = $name
+AND package_version.version = $version
 LIMIT 1
+`,
+    {
+      $name: name,
+      $version: version,
+    }
+  );
+
+  return row.readme;
+}
+
+export function getModules(name, version) {
+  return db.query(
+    `
+SELECT package_module.name, package_module.category
+FROM package_module
+JOIN package_version ON package_module.package_version_id = package_version.id
+JOIN package ON package_version.package_id = package.id
+WHERE package.name = $name
+AND package_version.version = $version
+ORDER BY sort_order
 `,
     {
       $name: name,

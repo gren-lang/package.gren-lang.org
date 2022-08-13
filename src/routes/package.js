@@ -48,24 +48,28 @@ router.get(
     const packageName = ctx.params.package;
     const version = ctx.params.version;
 
-    const packageInfo = await dbPackage.getPackageOverview(
-      packageName,
-      version
-    );
-    const renderedMarkdown = markdown.render(packageInfo.readme);
+    const readme = await dbPackage.getReadme(packageName, version);
 
-    const metadataObj = JSON.parse(packageInfo.metadata);
+      if (readme == null) {
+          ctx.status = 404;
+          return;
+
+      }
+
+      const renderedMarkdown = markdown.render(readme);
+
+    const modules = await dbPackage.getModules(packageName, version);
     const exposedModules = prepareExposedModulesView(
       packageName,
       version,
-      metadataObj
+      modules
     );
 
     views.render(ctx, {
       html: () =>
         views.packageOverview({
-          packageName: packageInfo.name,
-          packageVersion: packageInfo.version,
+          packageName: packageName,
+          packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
             package: packageName,
             version: version,
@@ -74,25 +78,29 @@ router.get(
           exposedModules: exposedModules,
         }),
       json: () => {
-        return docs;
+        return {
+            name: packageName,
+            version: version,
+            readme: readme
+        };
       },
-      text: () => docs.readme,
+      text: () => readme,
     });
   }
 );
 
-function prepareExposedModulesView(packageName, version, metadataObj) {
-  let exposedModules = metadataObj["exposed-modules"];
-  if (Array.isArray(exposedModules)) {
-    exposedModules = {
-      "": exposedModules,
-    };
-  }
+function prepareExposedModulesView(packageName, version, modules) {
+  const exposedModules = {};
 
-  for (let [key, value] of Object.entries(exposedModules)) {
-    exposedModules[key] = value.map((module) => {
-      return prepareModuleForView(packageName, version, module);
-    });
+  for (let module of modules) {
+    const category = module.category || "";
+    const existingCategoryValues = exposedModules[category] || [];
+
+    existingCategoryValues.push(
+        prepareModuleForView(packageName, version, module.name)
+    );
+
+    exposedModules[category] = existingCategoryValues;
   }
 
   return exposedModules;

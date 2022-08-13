@@ -259,6 +259,7 @@ async function buildDocs(job) {
     });
 
     const metadataObj = JSON.parse(metadataStr);
+    const exposedModules = prepareExposedModules(metadataObj['exposed-modules']);
     const modules = JSON.parse(docsStr);
 
     const pkg = await dbPackage.upsert(job.name, job.url);
@@ -281,9 +282,12 @@ async function buildDocs(job) {
       );
 
       for (let module of modules) {
+        const moduleMeta = exposedModules[module.name];
         const moduleRow = await dbPackage.registerModule(
           versioned.id,
           module.name,
+          moduleMeta.order,
+          moduleMeta.category,
           module.comment
         );
 
@@ -402,6 +406,34 @@ async function buildDocs(job) {
       );
     }
   }
+}
+
+function prepareExposedModules(exposedModules) {
+    const result = {};
+
+    if (Array.isArray(exposedModules)) {
+        for (let order = 0; order < exposedModules.length; order++) {
+            const moduleName = exposedModules[order];
+            result[moduleName] = {
+                order: order,
+                category: null
+            };
+        }
+    } else {
+        let order = 0;
+        for (let category in exposedModules) {
+            for (let moduleName of exposedModules[category]) {
+                result[moduleName] = {
+                    order: order,
+                    category: category
+                };
+
+                order++;
+            }
+        }
+    }
+
+    return result;
 }
 
 async function removeJobWorkingDir(job) {
