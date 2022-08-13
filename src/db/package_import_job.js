@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS package_import_jobs (
     step TEXT NOT NULL,
     in_progress INT NOT NULL,
     retry INT NOT NULL,
-    process_after TEXT NOT NULL,
+    process_after_epoch INTEGER NOT NULL,
     message TEXT NOT NULL,
     UNIQUE(name, version)
 ) STRICT;
@@ -33,7 +33,7 @@ export function getInProgressJob() {
 SELECT *
 FROM package_import_jobs
 WHERE in_progress = TRUE
-AND process_after < datetime()
+AND process_after_epoch < unixepoch('now')
 ORDER BY process_after
 LIMIT 1
 `,
@@ -56,7 +56,7 @@ INSERT INTO package_import_jobs (
     step,
     in_progress,
     retry,
-    process_after,
+    process_after_epoch,
     message
 ) VALUES (
     $name,
@@ -65,7 +65,7 @@ INSERT INTO package_import_jobs (
     $step,
     TRUE,
     0,
-    datetime(),
+    unixepoch('now'),
     'Waiting to execute'
 )
 `,
@@ -93,7 +93,7 @@ UPDATE package_import_jobs
 SET
     message = $reason,
     retry = retry + 1,
-    process_after = datetime('now', $nextTimeIncrease)
+    process_after_epoch = unixepoch('now') + $nextTimeIncrease
 WHERE
     id = $id
 `,
@@ -112,7 +112,7 @@ UPDATE package_import_jobs
 SET
     step = $nextStep,
     retry = 0,
-    process_after = datetime(),
+    process_after_epoch = unixepoch('now'),
     message = 'Waiting to execute'
 WHERE
     id = $id
@@ -131,7 +131,7 @@ UPDATE package_import_jobs
 SET
     in_progress = FALSE,
     message = $reason,
-    process_after = datetime()
+    process_after_epoch = unixepoch('now')
 WHERE
     id = $id
 `,
@@ -147,7 +147,7 @@ async function cleanup() {
     `
 DELETE FROM package_import_jobs
 WHERE in_progress = FALSE
-AND process_after < datetime('now', '-1 minute')
+AND process_after_epoch < unixepoch('now') - 60
 `,
     {}
   );

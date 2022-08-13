@@ -5,25 +5,74 @@ import * as log from "#src/log";
 
 export const migrations = [
   `
-CREATE TABLE IF NOT EXISTS packages (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    version TEXT NOT NULL,
-    url TEXT NOT NULL,
-    imported TEXT NOT NULL,
-    metadata TEXT NOT NULL,
-    readme TEXT NOT NULL,
-    docs TEXT NOT NULL,
-    UNIQUE(name, version)
+CREATE TABLE IF NOT EXISTS package (
+    id INT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    url TEXT NOT NULL
 ) STRICT;`,
   `
-CREATE VIRTUAL TABLE IF NOT EXISTS packages_fts USING FTS5 (
+CREATE TABLE IF NOT EXISTS package_version (
+    id INT PRIMARY KEY,
+    package_id INT REFERENCES package(id) ON DELETE CASCADE,
+    version TEXT NOT NULL,
+    gren_compatability TEXT NOT NULL,
+    imported_epoch INT NOT NULL,
+    UNIQUE(package_id, version)
+) STRICT;`,
+  `
+CREATE TABLE IF NOT EXISTS package_readme (
+    id INT PRIMARY KEY,
+    package_version INT REFERENCES package_version(id) ON DELETE CASCADE UNIQUE,
+    summary TEXT NOT NULL,
+    readme TEXT NOT NULL
+) STRICT;`,
+  `
+CREATE TABLE IF NOT EXISTS package_module (
+    id INT PRIMARY KEY,
+    package_version INT REFERENCES package_version(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    comment TEXT NOT NULL,
+    UNIQUE(package_version, name)
+) STRICT;`,
+  `
+CREATE TABLE IF NOT EXISTS package_module_union (
+    id INT PRIMARY KEY,
+    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    comment TEXT NOT NULL,
+    metadata TEXT NOT NULL
+) STRICT;`,
+  `
+CREATE TABLE IF NOT EXISTS package_module_alias (
+    id INT PRIMARY KEY,
+    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    comment TEXT NOT NULL,
+    metadata TEXT NOT NULL
+) STRICT;`,
+  `
+CREATE TABLE IF NOT EXISTS package_module_value (
+    id INT PRIMARY KEY,
+    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    comment TEXT NOT NULL,
+    type TEXT NOT NULL
+) STRICT;`,
+  `
+CREATE TABLE IF NOT EXISTS package_module_binop (
+    id INT PRIMARY KEY,
+    module_id INT REFERENCES package_module(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    comment TEXT NOT NULL,
+    metadata TEXT NOT NULL
+) STRICT;`,
+  `
+CREATE VIRTUAL TABLE IF NOT EXISTS package_fts USING FTS5 (
     name,
     version UNINDEXED,
     summary,
     tokenize="trigram"
-);
-`,
+);`,
 ];
 
 export function registerDocs(name, url, version, metadata, readme, docs) {
