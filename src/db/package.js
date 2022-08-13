@@ -356,22 +356,129 @@ LIMIT 1
   return row.readme;
 }
 
-export function getModules(name, version) {
+export function getModuleList(packageName, version) {
   return db.query(
     `
 SELECT package_module.name, package_module.category
 FROM package_module
 JOIN package_version ON package_module.package_version_id = package_version.id
 JOIN package ON package_version.package_id = package.id
-WHERE package.name = $name
+WHERE package.name = $packageName
 AND package_version.version = $version
 ORDER BY sort_order
 `,
     {
-      $name: name,
+      $packageName: packageName,
       $version: version,
     }
   );
+}
+
+export function getModuleComment(packageName, version, moduleName) {
+  return db.queryOne(
+    `
+SELECT package_module.id, package_module.comment
+FROM package_module
+JOIN package_version ON package_module.package_version_id = package_version.id
+JOIN package ON package_version.package_id = package.id
+WHERE package.name = $packageName
+AND package_version.version = $version
+AND package_module.name = $moduleName
+ORDER BY sort_order
+LIMIT 1
+`,
+    {
+      $packageName: packageName,
+      $version: version,
+      $moduleName: moduleName
+    }
+  );
+}
+
+export async function getModuleValues(moduleId) {
+  const rows = await db.query(
+    `
+SELECT name, type, comment
+FROM package_module_value
+WHERE module_id = $moduleId
+`,
+    {
+      $moduleId: moduleId
+    }
+  );
+
+  const result = {};
+
+  for (let row of rows)  {
+    result[row.name] = row;
+  }
+
+  return result;
+}
+
+export async function getModuleAliases(moduleId) {
+  const rows = await db.query(
+    `
+SELECT name, type, metadata, comment
+FROM package_module_alias
+WHERE module_id = $moduleId
+`,
+    {
+      $moduleId: moduleId
+    }
+  );
+
+  const result = {};
+
+  for (let row of rows)  {
+    const meta = JSON.parse(row.metadata);
+    result[row.name] = {...row, ...meta };
+  }
+
+  return result;
+}
+
+export async function getModuleUnions(moduleId) {
+  const rows = await db.query(
+    `
+SELECT name, metadata, comment
+FROM package_module_union
+WHERE module_id = $moduleId
+`,
+    {
+      $moduleId: moduleId
+    }
+  );
+
+  const result = {};
+
+  for (let row of rows)  {
+    const meta = JSON.parse(row.metadata);
+    result[row.name] = {...row, ...meta };
+  }
+
+  return result;
+}
+
+export async function getModuleBinops(moduleId) {
+  const rows = await db.query(
+    `
+SELECT name, type, comment, associativity, precedence
+FROM package_module_binop
+WHERE module_id = $moduleId
+`,
+    {
+      $moduleId: moduleId
+    }
+  );
+
+  const result = {};
+
+  for (let row of rows)  {
+    result[row.name] = row;
+  }
+
+  return result;
 }
 
 // SEARCH

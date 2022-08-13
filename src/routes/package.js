@@ -58,7 +58,7 @@ router.get(
 
       const renderedMarkdown = markdown.render(readme);
 
-    const modules = await dbPackage.getModules(packageName, version);
+    const modules = await dbPackage.getModuleList(packageName, version);
     const exposedModules = prepareExposedModulesView(
       packageName,
       version,
@@ -125,26 +125,20 @@ router.get(
     const version = ctx.params.version;
     const moduleName = ctx.params.module;
 
-    const packageInfo = await dbPackage.getPackageOverview(
-      packageName,
-      version
-    );
-    const docs = JSON.parse(packageInfo.docs);
-
-    const moduleInfo = docs.find((mod) => mod.name === moduleName);
+    const moduleInfo = await dbPackage.getModuleComment(packageName, version, moduleName);
     if (moduleInfo == null) {
       ctx.status = 404;
       return;
     }
 
-    const metadataObj = JSON.parse(packageInfo.metadata);
+      const moduleDocumentation = await prepareModuleDocumentation(moduleInfo);
+
+    const modules = await dbPackage.getModuleList(packageName, version);
     const exposedModules = prepareExposedModulesView(
       packageName,
       version,
-      metadataObj
+      modules
     );
-
-    const moduleDocumentation = prepareModuleDocumentation(moduleInfo);
 
     views.render(ctx, {
       html: () =>
@@ -167,30 +161,50 @@ router.get(
   }
 );
 
-function prepareModuleDocumentation(moduleInfo) {
+async function prepareModuleDocumentation(moduleInfo) {
   const docSplit = moduleInfo.comment.split("\n@docs");
   if (docSplit.length === 0) {
     return "";
   }
 
+  const values = await dbPackage.getModuleValues(moduleInfo.id);
+  const aliases = await dbPackage.getModuleAliases(moduleInfo.id);
+  const unions = await dbPackage.getModuleUnions(moduleInfo.id);
+  const binops = await dbPackage.getModuleBinops(moduleInfo.id);
+
   const intro = new Markdown(docSplit[0]);
 
   const parts = docSplit
     .slice(1)
-    .flatMap((p) => p.split(","))
-    .flatMap((block) => {
-      const words = block.trim().split(/\s+/);
-      if (words.length === 0) return [];
+    .map((p) => p.split(","))
+    .flatMap(function self(chunks) {
+      if (chunks.length === 0) {
+        return [];
+      }
+
+      const firstChunk = chunks[0];
+      const remainingChunks = chunks.slice(1);
+
+      const words = firstChunk.trim().split(/\s+/);
+      if (words.length === 0) {
+        return new Markdown(chunks.join(','));
+      }
 
       const firstWord = words[0];
-      const part = constructValue(moduleInfo, firstWord);
+      const part = constructValue(
+          firstWord,
+          values,
+          binops,
+          unions,
+          aliases
+      );
 
       if (words.length === 1) {
-        return [part];
+        return [part].concat(self(remainingChunks));
       }
 
       const moreMarkdown = new Markdown(
-        block.trimLeft().slice(firstWord.length)
+        [firstChunk.trimLeft().slice(firstWord.length)].concat(remainingChunks).join(",")
       );
 
       return [part, moreMarkdown];
@@ -215,11 +229,11 @@ function Binop(name, comment, type) {
   this.type = type;
 }
 
-function Union(name, comment, args, tags) {
+function Union(name, comment, args, cases) {
   this.name = name;
   this.comment = markdown.render(comment);
   this.args = args;
-  this.tags = tags;
+  this.cases = cases;
 }
 
 function Alias(name, comment, args, type) {
@@ -229,28 +243,24 @@ function Alias(name, comment, args, type) {
   this.type = type;
 }
 
-function constructValue(moduleInfo, name) {
-  let data = findByName(moduleInfo.values, name);
+function constructValue(name, values, binops, unions, aliases) {
+  let data = values[name];
   if (data) {
     return new Value(name, data.comment, data.type);
   }
 
-  data = findByName(moduleInfo.binops, name);
+  data = binops[name.slice(1, -1)];
   if (data) {
     return new Binop(name, data.comment, data.type);
   }
 
-  data = findByName(moduleInfo.unions, name);
+  data = unions[name];
   if (data) {
-    return new Union(name, data.comment, data.args, data.tags);
+    return new Union(name, data.comment, data.args, data.cases);
   }
 
-  data = findByName(moduleInfo.aliases, name);
+  data = aliases[name];
   if (data) {
     return new Alias(name, data.comment, data.args, data.type);
   }
-}
-
-function findByName(list, name) {
-  return list.find((e) => e.name === name);
 }
