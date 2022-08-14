@@ -116,9 +116,6 @@ async function performJob(job) {
     case dbPackageImportJob.stepNotifyZulip:
       await notifyZulip(job);
       break;
-    case dbPackageImportJob.stepCleanup:
-      await removeJobWorkingDir(job);
-      break;
     default:
       log.error(`Don't know what to do with job at step ${job.step}`, job);
       await dbPackageImportJob.stopJob(job.id, "Don't know what to do...");
@@ -362,10 +359,7 @@ async function buildDocs(job) {
         `Package ${job.name} at version ${job.version} already exist in our system`,
         job
       );
-      await dbPackageImportJob.advanceJob(
-        job.id,
-        dbPackageImportJob.stepCleanup
-      );
+      await dbPackageImportJob.stopJob(job.id, `Version already exist`);
       return;
     }
 
@@ -474,35 +468,13 @@ async function notifyZulip(job) {
       resp
     );
 
-    await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepCleanup);
+    await dbPackageImportJob.stopJob(job.id, "Done");
   } catch (error) {
     log.error("Unknown error when notifying zulip", error);
     await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
       "Unknown error when notifying zulip"
-    );
-  }
-}
-
-async function removeJobWorkingDir(job) {
-  try {
-    const localRepoPath = getLocalRepoPath(job);
-
-    await fs.rm(localRepoPath, { recursive: true });
-
-    log.info(
-      `Successfully cleaned workspace for package ${job.name} at version ${job.version}`,
-      job
-    );
-
-    await dbPackageImportJob.stopJob(job.id, "Import complete");
-  } catch (error) {
-    log.error("Unknown error when trying to cleanup after import.", error);
-    await dbPackageImportJob.scheduleJobForRetry(
-      job.id,
-      job.retry,
-      "Unknown error when trying to cleanup after import."
     );
   }
 }

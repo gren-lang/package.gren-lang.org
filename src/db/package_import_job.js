@@ -46,7 +46,6 @@ export const stepCloneRepo = "CLONE_REPO";
 export const stepBuildDocs = "BUILD_DOCS";
 export const stepAddToFTS = "ADD_TO_FULL_TEXT_SEARCH";
 export const stepNotifyZulip = "NOTIFY_ZULIP";
-export const stepCleanup = "CLEANUP";
 
 export function registerJob(name, url, version, step) {
   return db.run(
@@ -158,18 +157,36 @@ WHERE
   );
 }
 
+// WORKING DIRECTORIES
+
+export function workingDirectory(job) {
+  return path.join(xdgCache, "gren_packages", job.id.toString());
+}
+
 async function cleanup() {
-  const changes = await db.run(
+  const jobs = await db.query(
     `
-DELETE FROM package_import_job
+SELECT id
+FROM package_import_job
 WHERE in_progress = FALSE
 AND process_after_epoch < unixepoch('now') - 60
 `,
     {}
   );
 
-  if (changes > 0) {
-    log.info(`Deleted ${changes} stale package jobs.`);
+  for (let job of jobs) {
+    await fs.rm(workingDirectory(job), { recursive: true });
+    await db.run(
+      `
+DELETE FROM package_import_job
+WHERE id = $id
+`,
+      { $id: job.id }
+    );
+  }
+
+  if (jobs.length > 0) {
+    log.info(`Deleted ${jobs.length} stale package jobs.`);
   }
 }
 
