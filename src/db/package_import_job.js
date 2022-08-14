@@ -1,3 +1,7 @@
+import * as fs from "fs/promises";
+import * as path from "path";
+import { xdgCache } from "xdg-basedir";
+
 import * as db from "#src/db";
 import * as log from "#src/log";
 
@@ -159,10 +163,6 @@ WHERE
 
 // WORKING DIRECTORIES
 
-export function workingDirectory(job) {
-  return path.join(xdgCache, "gren_packages", job.id.toString());
-}
-
 async function cleanup() {
   const jobs = await db.query(
     `
@@ -175,7 +175,7 @@ AND process_after_epoch < unixepoch('now') - 60
   );
 
   for (let job of jobs) {
-    await fs.rm(workingDirectory(job), { recursive: true });
+    await removeWorkingDirectory(job);
     await db.run(
       `
 DELETE FROM package_import_job
@@ -187,6 +187,18 @@ WHERE id = $id
 
   if (jobs.length > 0) {
     log.info(`Deleted ${jobs.length} stale package jobs.`);
+  }
+}
+
+async function removeWorkingDirectory(job) {
+  const workDir = path.join(xdgCache, "gren_packages", job.id.toString());
+  try {
+    await fs.rm(workDir, { recursive: true });
+  } catch (err) {
+    // if it fails for another reason than directory not existing
+    if (err.code !== "ENOENT") {
+      log.error(`Failed to remove working directory: ${workDir}`);
+    }
   }
 }
 

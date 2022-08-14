@@ -9,7 +9,7 @@ export async function sendNewPackageNotification(name, version, summary) {
 
   const conn = await zulip(config.zulip);
 
-  return conn.messages.send({
+  const response = await conn.messages.send({
     to: "packages",
     type: "stream",
     subject: name,
@@ -19,4 +19,6 @@ Version ${version} was just published.
 ${summary}
 `,
   });
+
+  return response;
 }

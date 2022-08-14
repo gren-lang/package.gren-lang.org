@@ -272,8 +272,9 @@ async function buildDocs(job) {
     try {
       await db.run("BEGIN");
 
+      let versioned;
       try {
-        const versioned = await dbPackage.registerVersion(
+        versioned = await dbPackage.registerVersion(
           pkg.id,
           metadataObj.version,
           metadataObj.license,
