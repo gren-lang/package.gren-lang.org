@@ -278,7 +278,9 @@ async function buildDocs(job) {
           pkg.id,
           metadataObj.version,
           metadataObj.license,
-          metadataObj["gren-version"]
+          metadataObj["gren-version"],
+          metadataObj.summary,
+          readmeStr
         );
       } catch (err) {
         // 19: SQLITE_CONSTRAINT, means row already exists
@@ -294,12 +296,6 @@ async function buildDocs(job) {
           throw err;
         }
       }
-
-      await dbPackage.registerDescription(
-        versioned.id,
-        metadataObj.summary,
-        readmeStr
-      );
 
       for (let module of modules) {
         const moduleMeta = exposedModules[module.name];

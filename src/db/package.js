@@ -21,14 +21,9 @@ CREATE TABLE IF NOT EXISTS package_version (
     license TEXT NOT NULL,
     gren_compatability TEXT NOT NULL,
     imported_epoch INTEGER NOT NULL,
-    UNIQUE(package_id, major_version, minor_version, patch_version)
-) STRICT;`,
-  `
-CREATE TABLE IF NOT EXISTS package_description (
-    id INTEGER PRIMARY KEY,
-    package_version_id INTEGER NOT NULL REFERENCES package_version(id) ON DELETE CASCADE UNIQUE,
     summary TEXT NOT NULL,
-    readme TEXT NOT NULL
+    readme TEXT NOT NULL,
+    UNIQUE(package_id, version)
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module (
@@ -105,7 +100,14 @@ RETURNING *
   );
 }
 
-export function registerVersion(pkgId, version, license, grenVersionRange) {
+export function registerVersion(
+  pkgId,
+  version,
+  license,
+  grenVersionRange,
+  summary,
+  readme
+) {
   const parsedVersion = new semver.SemVer(version);
   return db.queryOne(
     `
@@ -116,7 +118,9 @@ INSERT INTO package_version (
     patch_version,
     license,
     gren_compatability,
-    imported_epoch
+    imported_epoch,
+    summary,
+    readme
 ) VALUES (
     $pkgId,
     $majorVersion,
@@ -124,7 +128,9 @@ INSERT INTO package_version (
     $patchVersion,
     $license,
     $grenVersionRange,
-    unixepoch('now')
+    unixepoch('now'),
+    $summary,
+    $readme
 )
 RETURNING *
 `,
@@ -135,27 +141,8 @@ RETURNING *
       $patchVersion: parsedVersion.patch,
       $license: license,
       $grenVersionRange: grenVersionRange,
-    }
-  );
-}
-
-export function registerDescription(versionId, summary, readme) {
-  return db.run(
-    `
-INSERT INTO package_description (
-    package_version_id,
-    summary,
-    readme
-) VALUES (
-    $versionId,
-    $summary,
-    $readme
-)
-`,
-    {
-      $versionId: versionId,
-      $summary: summary.trim(),
-      $readme: readme.trim(),
+      $summary: summary,
+      $readme: readme,
     }
   );
 }
@@ -340,9 +327,8 @@ LIMIT 1
 export async function getSummary(name, version) {
   const row = await db.queryOne(
     `
-SELECT package_description.summary
-FROM package_description
-JOIN package_version ON package_description.package_version_id = package_version.id
+SELECT package_version.summary
+FROM package_version
 JOIN package ON package_version.package_id = package.id
 WHERE package.name = $name
 AND package_version.version = $version
@@ -360,9 +346,8 @@ LIMIT 1
 export async function getReadme(name, version) {
   const row = await db.queryOne(
     `
-SELECT package_description.readme
-FROM package_description
-JOIN package_version ON package_description.package_version_id = package_version.id
+SELECT package_version.readme
+FROM package_version
 JOIN package ON package_version.package_id = package.id
 WHERE package.name = $name
 AND package_version.version = $version
