@@ -7,18 +7,16 @@ export async function sendNewPackageNotification(name, version, summary) {
     return;
   }
 
-  try {
-    const conn = await zulip(config.zulip);
+  const conn = await zulip(config.zulip);
 
-    await conn.messages.send({
-      to: "packages",
-      type: "stream",
-      subject: name,
-      content: `
+  return conn.messages.send({
+    to: "packages",
+    type: "stream",
+    subject: name,
+    content: `
 Version ${version} was just published.
 
 ${summary}
 `,
-    });
-  } catch (err) {}
+  });
 }

@@ -50,13 +50,12 @@ router.get(
 
     const readme = await dbPackage.getReadme(packageName, version);
 
-      if (readme == null) {
-          ctx.status = 404;
-          return;
+    if (readme == null) {
+      ctx.status = 404;
+      return;
+    }
 
-      }
-
-      const renderedMarkdown = markdown.render(readme);
+    const renderedMarkdown = markdown.render(readme);
 
     const modules = await dbPackage.getModuleList(packageName, version);
     const exposedModules = prepareExposedModulesView(
@@ -79,9 +78,9 @@ router.get(
         }),
       json: () => {
         return {
-            name: packageName,
-            version: version,
-            readme: readme
+          name: packageName,
+          version: version,
+          readme: readme,
         };
       },
       text: () => readme,
@@ -97,7 +96,7 @@ function prepareExposedModulesView(packageName, version, modules) {
     const existingCategoryValues = exposedModules[category] || [];
 
     existingCategoryValues.push(
-        prepareModuleForView(packageName, version, module.name)
+      prepareModuleForView(packageName, version, module.name)
     );
 
     exposedModules[category] = existingCategoryValues;
@@ -125,13 +124,17 @@ router.get(
     const version = ctx.params.version;
     const moduleName = ctx.params.module;
 
-    const moduleInfo = await dbPackage.getModuleComment(packageName, version, moduleName);
+    const moduleInfo = await dbPackage.getModuleComment(
+      packageName,
+      version,
+      moduleName
+    );
     if (moduleInfo == null) {
       ctx.status = 404;
       return;
     }
 
-      const moduleDocumentation = await prepareModuleDocumentation(moduleInfo);
+    const moduleDocumentation = await prepareModuleDocumentation(moduleInfo);
 
     const modules = await dbPackage.getModuleList(packageName, version);
     const exposedModules = prepareExposedModulesView(
@@ -187,24 +190,20 @@ async function prepareModuleDocumentation(moduleInfo) {
 
       const words = firstChunk.trim().split(/\s+/);
       if (words.length === 0) {
-        return new Markdown(chunks.join(','));
+        return new Markdown(chunks.join(","));
       }
 
       const firstWord = words[0];
-      const part = constructValue(
-          firstWord,
-          values,
-          binops,
-          unions,
-          aliases
-      );
+      const part = constructValue(firstWord, values, binops, unions, aliases);
 
       if (words.length === 1) {
         return [part].concat(self(remainingChunks));
       }
 
       const moreMarkdown = new Markdown(
-        [firstChunk.trimLeft().slice(firstWord.length)].concat(remainingChunks).join(",")
+        [firstChunk.trimLeft().slice(firstWord.length)]
+          .concat(remainingChunks)
+          .join(",")
       );
 
       return [part, moreMarkdown];

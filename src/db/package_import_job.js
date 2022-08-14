@@ -44,6 +44,8 @@ LIMIT 1
 export const stepFindMissingVersions = "FIND_MISSING_VERSIONS";
 export const stepCloneRepo = "CLONE_REPO";
 export const stepBuildDocs = "BUILD_DOCS";
+export const stepAddToFTS = "ADD_TO_FULL_TEXT_SEARCH";
+export const stepNotifyZulip = "NOTIFY_ZULIP";
 export const stepCleanup = "CLEANUP";
 
 export function registerJob(name, url, version, step) {

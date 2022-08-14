@@ -110,6 +110,12 @@ async function performJob(job) {
     case dbPackageImportJob.stepBuildDocs:
       await buildDocs(job);
       break;
+    case dbPackageImportJob.stepAddToFTS:
+      await addToFTS(job);
+      break;
+    case dbPackageImportJob.stepNotifyZulip:
+      await notifyZulip(job);
+      break;
     case dbPackageImportJob.stepCleanup:
       await removeJobWorkingDir(job);
       break;
@@ -259,7 +265,9 @@ async function buildDocs(job) {
     });
 
     const metadataObj = JSON.parse(metadataStr);
-    const exposedModules = prepareExposedModules(metadataObj['exposed-modules']);
+    const exposedModules = prepareExposedModules(
+      metadataObj["exposed-modules"]
+    );
     const modules = JSON.parse(docsStr);
 
     const pkg = await dbPackage.upsert(job.name, job.url);
@@ -274,7 +282,6 @@ async function buildDocs(job) {
         metadataObj["gren-version"]
       );
 
-      // TODO: Could this be the fts table?
       await dbPackage.registerDescription(
         versioned.id,
         metadataObj.summary,
@@ -332,21 +339,7 @@ async function buildDocs(job) {
         }
       }
 
-      // TODO: Move to seperate step
-      await dbPackage.registerForSearch(
-        job.name,
-        job.version,
-        metadataObj.summary
-      );
-
       await db.run("COMMIT");
-
-      // TODO: Move to seperate step
-      await zulip.sendNewPackageNotification(
-        job.name,
-        job.version,
-        metadataObj.summary
-      );
     } catch (err) {
       // TODO: Need better error handling
       await db.run("ROLLBACK");
@@ -358,7 +351,10 @@ async function buildDocs(job) {
       job
     );
 
-    await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepCleanup);
+    await dbPackageImportJob.advanceJob(
+      job.id,
+      dbPackageImportJob.stepAddToFTS
+    );
   } catch (error) {
     // 19: SQLITE_CONSTRAINT, means row already exists
     if (error.errno === 19) {
@@ -409,31 +405,84 @@ async function buildDocs(job) {
 }
 
 function prepareExposedModules(exposedModules) {
-    const result = {};
+  const result = {};
 
-    if (Array.isArray(exposedModules)) {
-        for (let order = 0; order < exposedModules.length; order++) {
-            const moduleName = exposedModules[order];
-            result[moduleName] = {
-                order: order,
-                category: null
-            };
-        }
-    } else {
-        let order = 0;
-        for (let category in exposedModules) {
-            for (let moduleName of exposedModules[category]) {
-                result[moduleName] = {
-                    order: order,
-                    category: category
-                };
-
-                order++;
-            }
-        }
+  if (Array.isArray(exposedModules)) {
+    for (let order = 0; order < exposedModules.length; order++) {
+      const moduleName = exposedModules[order];
+      result[moduleName] = {
+        order: order,
+        category: null,
+      };
     }
+  } else {
+    let order = 0;
+    for (let category in exposedModules) {
+      for (let moduleName of exposedModules[category]) {
+        result[moduleName] = {
+          order: order,
+          category: category,
+        };
 
-    return result;
+        order++;
+      }
+    }
+  }
+
+  return result;
+}
+
+async function addToFTS(job) {
+  try {
+    const summary = await dbPackage.getSummary(job.name, job.version);
+
+    await dbPackage.registerForSearch(job.name, job.version, summary);
+
+    log.info(
+      `Successfully added ${job.name} version ${job.version} to FTS table`
+    );
+
+    await dbPackageImportJob.advanceJob(
+      job.id,
+      dbPackageImportJob.stepNotifyZulip
+    );
+  } catch (error) {
+    log.error(
+      "Unknown error when registering package for full text search",
+      error
+    );
+    await dbPackageImportJob.scheduleJobForRetry(
+      job.id,
+      job.retry,
+      "Unknown error when registering package for full text search"
+    );
+  }
+}
+
+async function notifyZulip(job) {
+  try {
+    const summary = await dbPackage.getSummary(job.name, job.version);
+
+    const resp = await zulip.sendNewPackageNotification(
+      job.name,
+      job.version,
+      summary
+    );
+
+    log.info(
+      `Response from Zulip for ${job.name} version ${job.version}`,
+      resp
+    );
+
+    await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepCleanup);
+  } catch (error) {
+    log.error("Unknown error when notifying zulip", error);
+    await dbPackageImportJob.scheduleJobForRetry(
+      job.id,
+      job.retry,
+      "Unknown error when notifying zulip"
+    );
+  }
 }
 
 async function removeJobWorkingDir(job) {

@@ -336,6 +336,26 @@ LIMIT 1
   return row.version;
 }
 
+export async function getSummary(name, version) {
+  const row = await db.queryOne(
+    `
+SELECT package_description.summary
+FROM package_description
+JOIN package_version ON package_description.package_version_id = package_version.id
+JOIN package ON package_version.package_id = package.id
+WHERE package.name = $name
+AND package_version.version = $version
+LIMIT 1
+`,
+    {
+      $name: name,
+      $version: version,
+    }
+  );
+
+  return row.summary;
+}
+
 export async function getReadme(name, version) {
   const row = await db.queryOne(
     `
@@ -390,7 +410,7 @@ LIMIT 1
     {
       $packageName: packageName,
       $version: version,
-      $moduleName: moduleName
+      $moduleName: moduleName,
     }
   );
 }
@@ -403,13 +423,13 @@ FROM package_module_value
 WHERE module_id = $moduleId
 `,
     {
-      $moduleId: moduleId
+      $moduleId: moduleId,
     }
   );
 
   const result = {};
 
-  for (let row of rows)  {
+  for (let row of rows) {
     result[row.name] = row;
   }
 
@@ -424,15 +444,15 @@ FROM package_module_alias
 WHERE module_id = $moduleId
 `,
     {
-      $moduleId: moduleId
+      $moduleId: moduleId,
     }
   );
 
   const result = {};
 
-  for (let row of rows)  {
+  for (let row of rows) {
     const meta = JSON.parse(row.metadata);
-    result[row.name] = {...row, ...meta };
+    result[row.name] = { ...row, ...meta };
   }
 
   return result;
@@ -446,15 +466,15 @@ FROM package_module_union
 WHERE module_id = $moduleId
 `,
     {
-      $moduleId: moduleId
+      $moduleId: moduleId,
     }
   );
 
   const result = {};
 
-  for (let row of rows)  {
+  for (let row of rows) {
     const meta = JSON.parse(row.metadata);
-    result[row.name] = {...row, ...meta };
+    result[row.name] = { ...row, ...meta };
   }
 
   return result;
@@ -468,13 +488,13 @@ FROM package_module_binop
 WHERE module_id = $moduleId
 `,
     {
-      $moduleId: moduleId
+      $moduleId: moduleId,
     }
   );
 
   const result = {};
 
-  for (let row of rows)  {
+  for (let row of rows) {
     result[row.name] = row;
   }
 
