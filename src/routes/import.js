@@ -272,12 +272,27 @@ async function buildDocs(job) {
     try {
       await db.run("BEGIN");
 
-      const versioned = await dbPackage.registerVersion(
-        pkg.id,
-        metadataObj.version,
-        metadataObj.license,
-        metadataObj["gren-version"]
-      );
+      try {
+        const versioned = await dbPackage.registerVersion(
+          pkg.id,
+          metadataObj.version,
+          metadataObj.license,
+          metadataObj["gren-version"]
+        );
+      } catch (err) {
+        // 19: SQLITE_CONSTRAINT, means row already exists
+        if (error.errno === 19) {
+          log.info(
+            `Package ${job.name} at version ${job.version} already exist in our system`,
+            job
+          );
+          await db.run("ROLLBACK");
+          await dbPackageImportJob.stopJob(job.id, `Version already exist`);
+          return;
+        } else {
+          throw err;
+        }
+      }
 
       await dbPackage.registerDescription(
         versioned.id,
@@ -338,7 +353,6 @@ async function buildDocs(job) {
 
       await db.run("COMMIT");
     } catch (err) {
-      // TODO: Need better error handling
       await db.run("ROLLBACK");
       throw err;
     }
@@ -353,16 +367,6 @@ async function buildDocs(job) {
       dbPackageImportJob.stepAddToFTS
     );
   } catch (error) {
-    // 19: SQLITE_CONSTRAINT, means row already exists
-    if (error.errno === 19) {
-      log.info(
-        `Package ${job.name} at version ${job.version} already exist in our system`,
-        job
-      );
-      await dbPackageImportJob.stopJob(job.id, `Version already exist`);
-      return;
-    }
-
     let compilerError;
     try {
       compilerError = JSON.parse(error.stderr);
@@ -382,9 +386,8 @@ async function buildDocs(job) {
         "Package does not support current Gren compiler",
         compilerError
       );
-      await dbPackageImportJob.scheduleJobForRetry(
+      await dbPackageImportJob.stopJob(
         job.id,
-        job.retry,
         "Package doesn't support current Gren compiler."
       );
     } else {
