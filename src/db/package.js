@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS package_module_union (
     id INTEGER PRIMARY KEY,
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    metadata TEXT NOT NULL,
+    args TEXT NOT NULL,
+    cases TEXT NOT NULL,
     comment TEXT NOT NULL
 ) STRICT;`,
   `
@@ -54,7 +55,7 @@ CREATE TABLE IF NOT EXISTS package_module_alias (
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    metadata TEXT NOT NULL,
+    args TEXT NOT NULL,
     comment TEXT NOT NULL
 ) STRICT;`,
   `
@@ -194,22 +195,22 @@ INSERT INTO package_module_union (
     module_id,
     name,
     comment,
-    metadata
+    args,
+    cases
 ) VALUES (
     $moduleId,
     $name,
     $comment,
-    $metadata
+    $args,
+    $cases
 )
 `,
     {
       $moduleId: moduleId,
       $name: name,
       $comment: comment.trim(),
-      $metadata: JSON.stringify({
-        args: args,
-        cases: cases,
-      }),
+      $args: args.join(","),
+      $cases: JSON.stringify(cases),
     }
   );
 }
@@ -222,13 +223,13 @@ INSERT INTO package_module_alias (
     name,
     comment,
     type,
-    metadata
+    args
 ) VALUES (
     $moduleId,
     $name,
     $comment,
     $type,
-    $metadata
+    $args
 )
 `,
     {
@@ -236,7 +237,7 @@ INSERT INTO package_module_alias (
       $name: name,
       $comment: comment.trim(),
       $type: type,
-      $metadata: JSON.stringify({ args: args }),
+      $args: args.join(","),
     }
   );
 }
@@ -439,7 +440,7 @@ WHERE module_id = $moduleId
 export async function getModuleAliases(moduleId) {
   const rows = await db.query(
     `
-SELECT name, type, metadata, comment
+SELECT name, type, args, comment
 FROM package_module_alias
 WHERE module_id = $moduleId
 `,
@@ -451,8 +452,10 @@ WHERE module_id = $moduleId
   const result = {};
 
   for (let row of rows) {
-    const meta = JSON.parse(row.metadata);
-    result[row.name] = { ...row, ...meta };
+    result[row.name] = {
+      ...row,
+      args: row.args.split(","),
+    };
   }
 
   return result;
@@ -461,7 +464,7 @@ WHERE module_id = $moduleId
 export async function getModuleUnions(moduleId) {
   const rows = await db.query(
     `
-SELECT name, metadata, comment
+SELECT name, args, cases, comment
 FROM package_module_union
 WHERE module_id = $moduleId
 `,
@@ -473,8 +476,12 @@ WHERE module_id = $moduleId
   const result = {};
 
   for (let row of rows) {
-    const meta = JSON.parse(row.metadata);
-    result[row.name] = { ...row, ...meta };
+    const cases = JSON.parse(row.cases);
+    result[row.name] = {
+      ...row,
+      ...cases,
+      args: row.args.split(","),
+    };
   }
 
   return result;
