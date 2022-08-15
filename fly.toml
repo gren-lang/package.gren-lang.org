@@ -10,10 +10,17 @@ processes = []
 
 [env]
   GREN_PORT = "8080"
+  GREN_PACKAGES_DATABASE = "/data/db.sqlite"
+  GREN_ZULIP_USERNAME = "packages-bot@gren.zulipchat.com"
+  GREN_ZULIP_REALM = "https://gren.zulipchat.com"
 
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
+
+[mounts]
+  source = "gren_packages_data"
+  destination = "/data"
 
 [[services]]
   http_checks = []
