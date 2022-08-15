@@ -106,16 +106,16 @@ RETURNING *
 }
 
 function internString(value) {
-    return db.queryOne(
-        `
+  return db.queryOne(
+    `
 INSERT INTO package_big_text (text)
 VALUES ($value)
 ON CONFLICT (text) DO UPDATE
 SET text = $value
 RETURNING id
 `,
-        { $value: value }
-    );
+    { $value: value }
+  );
 }
 
 export async function registerVersion(
@@ -166,7 +166,13 @@ RETURNING *
   );
 }
 
-export async function registerModule(versionId, name, order, category, comment) {
+export async function registerModule(
+  versionId,
+  name,
+  order,
+  category,
+  comment
+) {
   const commentRow = await internString(comment.trim());
   return db.queryOne(
     `
@@ -190,14 +196,21 @@ RETURNING *
       $name: name,
       $order: order,
       $category: category,
-      $commentId: commentRow.id
+      $commentId: commentRow.id,
     }
   );
 }
 
-export async function registerModuleUnion(moduleId, name, comment, args, cases) {
+export async function registerModuleUnion(
+  moduleId,
+  name,
+  comment,
+  args,
+  cases
+) {
   const trimmedComment = comment.trim();
-  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
+  const commentRow =
+    trimmedComment === "" ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_union (
@@ -226,7 +239,8 @@ INSERT INTO package_module_union (
 
 export async function registerModuleAlias(moduleId, name, comment, args, type) {
   const trimmedComment = comment.trim();
-  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
+  const commentRow =
+    trimmedComment === "" ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_alias (
@@ -255,7 +269,8 @@ INSERT INTO package_module_alias (
 
 export async function registerModuleValue(moduleId, name, comment, type) {
   const trimmedComment = comment.trim();
-  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
+  const commentRow =
+    trimmedComment === "" ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_value (
@@ -288,7 +303,8 @@ export async function registerModuleBinop(
   precedence
 ) {
   const trimmedComment = comment.trim();
-  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
+  const commentRow =
+    trimmedComment === "" ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_binop (
