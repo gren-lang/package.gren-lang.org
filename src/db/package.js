@@ -11,6 +11,11 @@ CREATE TABLE IF NOT EXISTS package (
     url TEXT NOT NULL
 ) STRICT;`,
   `
+CREATE TABLE IF NOT EXISTS package_big_text (
+    id INTEGER PRIMARY KEY,
+    text TEXT NOT NULL UNIQUE
+) STRICT;`,
+  `
 CREATE TABLE IF NOT EXISTS package_version (
     id INTEGER PRIMARY KEY,
     package_id INTEGER NOT NULL REFERENCES package(id) ON DELETE CASCADE,
@@ -22,7 +27,7 @@ CREATE TABLE IF NOT EXISTS package_version (
     gren_compatability TEXT NOT NULL,
     imported_epoch INTEGER NOT NULL,
     summary TEXT NOT NULL,
-    readme TEXT NOT NULL,
+    readme_id INTEGER REFERENCES package_big_text(id) NOT NULL,
     UNIQUE(package_id, version)
 ) STRICT;`,
   `
@@ -32,7 +37,7 @@ CREATE TABLE IF NOT EXISTS package_module (
     sort_order INTEGER NOT NULL,
     name TEXT NOT NULL,
     category TEXT,
-    comment TEXT NOT NULL,
+    comment_id INTEGER REFERENCES package_big_text(id) NOT NULL,
     UNIQUE(package_version_id, name)
 ) STRICT;`,
   `
@@ -42,7 +47,7 @@ CREATE TABLE IF NOT EXISTS package_module_union (
     name TEXT NOT NULL,
     args TEXT NOT NULL,
     cases TEXT NOT NULL,
-    comment TEXT NOT NULL
+    comment_id INTEGER REFERENCES package_big_text(id)
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_alias (
@@ -51,7 +56,7 @@ CREATE TABLE IF NOT EXISTS package_module_alias (
     name TEXT NOT NULL,
     type TEXT NOT NULL,
     args TEXT NOT NULL,
-    comment TEXT NOT NULL
+    comment_id INTEGER REFERENCES package_big_text(id)
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_value (
@@ -59,7 +64,7 @@ CREATE TABLE IF NOT EXISTS package_module_value (
     module_id INTEGER NOT NULL REFERENCES package_module(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    comment TEXT NOT NULL
+    comment_id INTEGER REFERENCES package_big_text(id)
 ) STRICT;`,
   `
 CREATE TABLE IF NOT EXISTS package_module_binop (
@@ -69,7 +74,7 @@ CREATE TABLE IF NOT EXISTS package_module_binop (
     type TEXT NOT NULL,
     associativity TEXT NOT NULL,
     precedence INTEGER NOT NULL,
-    comment TEXT NOT NULL
+    comment_id INTEGER REFERENCES package_big_text(id)
 ) STRICT;`,
   `
 CREATE VIRTUAL TABLE IF NOT EXISTS package_fts USING FTS5 (
@@ -100,7 +105,20 @@ RETURNING *
   );
 }
 
-export function registerVersion(
+function internString(value) {
+    return db.queryOne(
+        `
+INSERT INTO package_big_text (text)
+VALUES ($value)
+ON CONFLICT (text) DO UPDATE
+SET text = $value
+RETURNING id
+`,
+        { $value: value }
+    );
+}
+
+export async function registerVersion(
   pkgId,
   version,
   license,
@@ -109,6 +127,7 @@ export function registerVersion(
   readme
 ) {
   const parsedVersion = new semver.SemVer(version);
+  const readmeRow = await internString(readme.trim());
   return db.queryOne(
     `
 INSERT INTO package_version (
@@ -120,7 +139,7 @@ INSERT INTO package_version (
     gren_compatability,
     imported_epoch,
     summary,
-    readme
+    readme_id
 ) VALUES (
     $pkgId,
     $majorVersion,
@@ -130,7 +149,7 @@ INSERT INTO package_version (
     $grenVersionRange,
     unixepoch('now'),
     $summary,
-    $readme
+    $readmeId
 )
 RETURNING *
 `,
@@ -142,12 +161,13 @@ RETURNING *
       $license: license,
       $grenVersionRange: grenVersionRange,
       $summary: summary,
-      $readme: readme,
+      $readmeId: readmeRow.id,
     }
   );
 }
 
-export function registerModule(versionId, name, order, category, comment) {
+export async function registerModule(versionId, name, order, category, comment) {
+  const commentRow = await internString(comment.trim());
   return db.queryOne(
     `
 INSERT INTO package_module (
@@ -155,13 +175,13 @@ INSERT INTO package_module (
     name,
     sort_order,
     category,
-    comment
+    comment_id
 ) VALUES (
     $versionId,
     $name,
     $order,
     $category,
-    $comment
+    $commentId
 )
 RETURNING *
 `,
@@ -170,24 +190,26 @@ RETURNING *
       $name: name,
       $order: order,
       $category: category,
-      $comment: comment.trim(),
+      $commentId: commentRow.id
     }
   );
 }
 
-export function registerModuleUnion(moduleId, name, comment, args, cases) {
+export async function registerModuleUnion(moduleId, name, comment, args, cases) {
+  const trimmedComment = comment.trim();
+  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_union (
     module_id,
     name,
-    comment,
+    comment_id,
     args,
     cases
 ) VALUES (
     $moduleId,
     $name,
-    $comment,
+    $commentId,
     $args,
     $cases
 )
@@ -195,26 +217,28 @@ INSERT INTO package_module_union (
     {
       $moduleId: moduleId,
       $name: name,
-      $comment: comment.trim(),
+      $commentId: commentRow ? commentRow.id : null,
       $args: args.join(","),
       $cases: JSON.stringify(cases),
     }
   );
 }
 
-export function registerModuleAlias(moduleId, name, comment, args, type) {
+export async function registerModuleAlias(moduleId, name, comment, args, type) {
+  const trimmedComment = comment.trim();
+  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_alias (
     module_id,
     name,
-    comment,
+    comment_id,
     type,
     args
 ) VALUES (
     $moduleId,
     $name,
-    $comment,
+    $commentId,
     $type,
     $args
 )
@@ -222,38 +246,40 @@ INSERT INTO package_module_alias (
     {
       $moduleId: moduleId,
       $name: name,
-      $comment: comment.trim(),
+      $commentId: commentRow ? commentRow.id : null,
       $type: type,
       $args: args.join(","),
     }
   );
 }
 
-export function registerModuleValue(moduleId, name, comment, type) {
+export async function registerModuleValue(moduleId, name, comment, type) {
+  const trimmedComment = comment.trim();
+  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_value (
     module_id,
     name,
-    comment,
+    comment_id,
     type
 ) VALUES (
     $moduleId,
     $name,
-    $comment,
+    $commentId,
     $type
 )
 `,
     {
       $moduleId: moduleId,
       $name: name,
-      $comment: comment.trim(),
+      $commentId: commentRow ? commentRow.id : null,
       $type: type,
     }
   );
 }
 
-export function registerModuleBinop(
+export async function registerModuleBinop(
   moduleId,
   name,
   comment,
@@ -261,19 +287,21 @@ export function registerModuleBinop(
   associativity,
   precedence
 ) {
+  const trimmedComment = comment.trim();
+  const commentRow = trimmedComment === '' ? null : await internString(comment.trim());
   return db.run(
     `
 INSERT INTO package_module_binop (
     module_id,
     name,
-    comment,
+    comment_id,
     type,
     associativity,
     precedence
 ) VALUES (
     $moduleId,
     $name,
-    $comment,
+    $commentId,
     $type,
     $associativity,
     $precedence
@@ -282,7 +310,7 @@ INSERT INTO package_module_binop (
     {
       $moduleId: moduleId,
       $name: name,
-      $comment: comment.trim(),
+      $commentId: commentRow ? commentRow.id : null,
       $type: type,
       $associativity: associativity,
       $precedence: precedence,
@@ -346,9 +374,10 @@ LIMIT 1
 export async function getReadme(name, version) {
   const row = await db.queryOne(
     `
-SELECT package_version.readme
+SELECT package_big_text.text AS readme
 FROM package_version
 JOIN package ON package_version.package_id = package.id
+JOIN package_big_text ON package_version.readme_id = package_big_text.id
 WHERE package.name = $name
 AND package_version.version = $version
 LIMIT 1
@@ -383,10 +412,11 @@ ORDER BY sort_order
 export function getModuleComment(packageName, version, moduleName) {
   return db.queryOne(
     `
-SELECT package_module.id, package_module.comment
+SELECT package_module.id, package_big_text.text AS comment
 FROM package_module
 JOIN package_version ON package_module.package_version_id = package_version.id
 JOIN package ON package_version.package_id = package.id
+JOIN package_big_text ON package_module.comment_id = package_big_text.id
 WHERE package.name = $packageName
 AND package_version.version = $version
 AND package_module.name = $moduleName
@@ -404,8 +434,9 @@ LIMIT 1
 export async function getModuleValues(moduleId) {
   const rows = await db.query(
     `
-SELECT name, type, comment
+SELECT name, type, COALESCE(package_big_text.text, '') AS comment
 FROM package_module_value
+LEFT JOIN package_big_text ON package_module_value.comment_id = package_big_text.id
 WHERE module_id = $moduleId
 `,
     {
@@ -425,8 +456,9 @@ WHERE module_id = $moduleId
 export async function getModuleAliases(moduleId) {
   const rows = await db.query(
     `
-SELECT name, type, args, comment
+SELECT name, type, args, COALESCE(package_big_text.text, '') AS comment
 FROM package_module_alias
+LEFT JOIN package_big_text ON package_module_alias.comment_id = package_big_text.id
 WHERE module_id = $moduleId
 `,
     {
@@ -449,8 +481,9 @@ WHERE module_id = $moduleId
 export async function getModuleUnions(moduleId) {
   const rows = await db.query(
     `
-SELECT name, args, cases, comment
+SELECT name, args, cases, COALESCE(package_big_text.text, '') AS comment
 FROM package_module_union
+LEFT JOIN package_big_text ON package_module_union.comment_id = package_big_text.id
 WHERE module_id = $moduleId
 `,
     {
@@ -475,8 +508,9 @@ WHERE module_id = $moduleId
 export async function getModuleBinops(moduleId) {
   const rows = await db.query(
     `
-SELECT name, type, comment, associativity, precedence
+SELECT name, type, COALESCE(package_big_text.text, '') AS comment, associativity, precedence
 FROM package_module_binop
+LEFT JOIN package_big_text ON package_module_binop.comment_id = package_big_text.id
 WHERE module_id = $moduleId
 `,
     {
