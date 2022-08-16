@@ -9,6 +9,7 @@ processes = []
   builder = "heroku/buildpacks:20"
 
 [env]
+  NODE_ENV = "production"
   GREN_PORT = "8080"
   GREN_PACKAGES_DATABASE = "/data/db.sqlite"
   GREN_ZULIP_USERNAME = "packages-bot@gren.zulipchat.com"
