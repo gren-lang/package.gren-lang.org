@@ -7,7 +7,7 @@ import * as log from "#src/log";
 import { port } from "#src/config";
 import * as recurring from "#src/recurring_tasks";
 
-import "./newrelic.cjs";
+import "newrelic";
 
 async function setup() {
   await db.init();
