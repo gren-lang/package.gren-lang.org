@@ -43,7 +43,7 @@ processes = []
     handlers = ["tls", "http"]
     port = 443
 
-  [[services.http_checks]]
+  [services.http_checks]
     interval = "15s"
     grace_period = "5s"
     method = "get"
