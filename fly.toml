@@ -1,5 +1,3 @@
-# fly.toml file generated for gren-packages on 2022-08-15T21:20:29+02:00
-
 app = "gren-packages"
 kill_signal = "SIGINT"
 kill_timeout = 10
@@ -7,6 +5,9 @@ processes = []
 
 [build]
   builder = "heroku/buildpacks:20"
+  [build.args]
+  NODE_ENV = "production"
+
 
 [env]
   NODE_ENV = "production"
