@@ -1,3 +1,6 @@
+// must be first for best monitoring results
+import "newrelic";
+
 import http from "http";
 import process from "process";
 
@@ -6,8 +9,6 @@ import { api } from "#src/api";
 import * as log from "#src/log";
 import { port } from "#src/config";
 import * as recurring from "#src/recurring_tasks";
-
-import "newrelic";
 
 async function setup() {
   await db.init();
