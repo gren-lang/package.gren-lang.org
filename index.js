@@ -1,5 +1,5 @@
 // must be first for best monitoring results
-import "newrelic";
+import newrelic from "newrelic";
 
 import http from "http";
 import process from "process";
