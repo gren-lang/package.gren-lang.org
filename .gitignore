@@ -1,5 +1,6 @@
 node_modules/
 db.sqlite
+newrelic_agent.log
 
 # Mac stuff
 .DS_Store
