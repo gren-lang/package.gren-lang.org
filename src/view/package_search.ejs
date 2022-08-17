@@ -1,10 +1,11 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <h1>Search results for '<%= query %>'</h1>
 
-    <form action="/package/search" "method="post">
-        <input id="query" "type="search" name="query" value="<%= query %>" />
+    <form class="inline_form" action="/package/search" method="get">
+        <input id="query" name="query" placeholder="Search for package" type="search" />
         <button type="submit">Search</button>
     </form>
+
+    <h2>Results for '<%= query %>'</h2>
 
     <ul>
         <%_ results.forEach(function(result) { -%>

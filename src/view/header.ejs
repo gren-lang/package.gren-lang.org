@@ -1,7 +1,29 @@
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="/style.css">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <link rel="icon" sizes="192x192" type="image/png" href="/favicon.png"/>
+    <link rel="apple-touch-icon" sizes="192x192" href="/favicon.png"/>
+
 <%_ if(refresh) { -%>
     <meta http-equiv="refresh" content="<%- refresh %>" />
 <%_ } -%>
 </head>
 <body>
+    <main>
+        <header>
+            <nav class="container">
+                <a href="/" title="Gren Package Search">
+                    <img src="/big_icon.png" alt="Robin, the Gren mascot">
+                </a>
+                <ul class="navigation-list float-right">
+                    <li class="navigation-listitem">
+                        <a href="/import/init" title="Add new package">New</a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        <section class="container content">

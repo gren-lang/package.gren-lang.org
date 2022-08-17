@@ -1,9 +1,9 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <h1>Add package</h1>
-
     <form method="post">
-        <label for="package_name">Package Name</label>
-        <input id="package_name" "type="text" name="packageName" />
-        <button type="submit">Add</button>
+        <label for="package_name">Import package</label>
+        <div class="inline_form">
+            <input id="package_name" name="packageName" type="text" placeholder="author/project" />
+            <button type="submit">Add</button>
+        </div>
     </form>
 <%- include('/footer.ejs') -%>

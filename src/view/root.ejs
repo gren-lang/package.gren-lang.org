@@ -1,10 +1,6 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <h1>Welcome to the Gren package site</h1>
-
-    <div><a href="/import/init">Add a package</a></div>
-
-    <form action="/package/search" "method="post">
-        <input id="query" "type="search" name="query" />
+    <form class="inline_form" action="/package/search" method="get">
+        <input id="query" name="query" placeholder="Search for package" type="search" />
         <button type="submit">Search</button>
     </form>
 <%- include('/footer.ejs') -%>

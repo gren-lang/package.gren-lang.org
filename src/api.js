@@ -1,6 +1,8 @@
 import Koa from "koa";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
+import serve from "koa-static";
+import compress from "koa-compress";
 
 import { rateLimit } from "#src/rate_limit";
 import { router as rootRouter } from "#routes/root";
@@ -15,7 +17,23 @@ router.use(rootRouter.routes());
 router.use(importRouter.routes());
 router.use(packageRouter.routes());
 
+api.use(
+  compress({
+    threshold: 2048,
+  })
+);
+
 api.use(rateLimit);
+
+api.use(
+  serve("./public", {
+    maxage: 3600 * 1000,
+    index: null,
+    gzip: false,
+    brotli: false,
+  })
+);
+
 api.use(bodyParser());
 api.use(router.routes());
 api.use(router.allowedMethods());

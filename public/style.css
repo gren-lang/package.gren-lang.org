@@ -1,0 +1,87 @@
+@import url(/normalize.css);
+@import url(/milligram.css);
+
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/roboto_regular.ttf) format("truetype");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+:root {
+  --accent: #ff6600;
+  --background: #f4f5f6;
+}
+
+body {
+  font-weight: 400;
+}
+
+a {
+  color: var(--accent);
+}
+
+pre {
+  border-left-color: var(--accent);
+}
+
+.container {
+  max-width: 80rem;
+}
+
+main > header {
+  background-color: var(--background);
+  border-bottom: 0.1rem solid #d1d1d1;
+  height: 5.2rem;
+  line-height: 5.2rem;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+main > header img {
+  height: 3.8rem;
+  vertical-align: middle;
+}
+
+main > header .navigation-list {
+  display: block;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+main > header .navigation-list > .navigation-listitem {
+  display: inline-block;
+  margin-left: 2rem;
+}
+
+main > .content {
+  padding-top: 7rem;
+  padding-bottom: 4rem;
+}
+
+main > .content .inline_form {
+    display: flex;
+}
+
+main > footer {
+  background-color: white;
+  height: 3.5rem;
+  line-height: 3.5rem;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+}
+
+main > footer small {
+  display: block;
+  text-align: center;
+}

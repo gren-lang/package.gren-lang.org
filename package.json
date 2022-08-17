@@ -23,6 +23,8 @@
     "gren-compiler-library": "^0.1.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
+    "koa-compress": "^5.1.0",
+    "koa-static": "^5.0.0",
     "markdown-it": "13.0.1",
     "newrelic": "^9.0.0",
     "pino": "^8.4.1",
