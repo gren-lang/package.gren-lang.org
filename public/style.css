@@ -67,7 +67,7 @@ main > .content {
 }
 
 main > .content .inline_form {
-    display: flex;
+  display: flex;
 }
 
 main > footer {
