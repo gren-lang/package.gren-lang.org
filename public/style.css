@@ -14,6 +14,7 @@
 
 :root {
   --accent: #ff6600;
+  --accent-background: #d1d1d1;
   --background: #f4f5f6;
 }
 
@@ -23,6 +24,32 @@ body {
 
 a {
   color: var(--accent);
+}
+
+a:hover {
+  color: var(--accent-background);
+}
+
+input:hover {
+  border-color: var(--accent) !important;
+}
+
+input:active {
+  border-color: var(--accent) !important;
+}
+
+input:focus {
+  border-color: var(--accent) !important;
+}
+
+button {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+button:hover {
+  background-color: var(--accent-background);
+  border-color: var(--accent-background);
 }
 
 pre {
@@ -35,7 +62,7 @@ pre {
 
 main > header {
   background-color: var(--background);
-  border-bottom: 0.1rem solid #d1d1d1;
+  border-bottom: 0.1rem solid var(--accent-background);
   height: 5.2rem;
   line-height: 5.2rem;
   width: 100%;
@@ -45,20 +72,14 @@ main > header {
   z-index: 2;
 }
 
+main > header nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 main > header img {
   height: 3.8rem;
-  vertical-align: middle;
-}
-
-main > header .navigation-list {
-  display: block;
-  list-style: none;
-  margin-bottom: 0;
-}
-
-main > header .navigation-list > .navigation-listitem {
-  display: inline-block;
-  margin-left: 2rem;
 }
 
 main > .content {
@@ -68,6 +89,39 @@ main > .content {
 
 main > .content .inline_form {
   display: flex;
+}
+
+main > .content .inline_form > input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right-color: transparent;
+}
+
+main > .content .inline_form > button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left-color: transparent;
+}
+
+main > .content ul.package-list {
+  list-style: none;
+}
+
+main > .content ul.package-list > li {
+  margin-bottom: 3.5rem;
+}
+
+main > .content ul.package-list > li > .package-name {
+  font-size: 2.5rem;
+}
+
+main > .content ul.package-list > li > .package-version {
+  display: inline;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+
+main > .content ul.package-list > li > .package-summary {
 }
 
 main > footer {

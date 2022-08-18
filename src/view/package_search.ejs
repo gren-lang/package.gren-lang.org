@@ -7,11 +7,5 @@
 
     <h2>Results for '<%= query %>'</h2>
 
-    <ul>
-        <%_ results.forEach(function(result) { -%>
-        <li><a href="/package/<%= encodeURIComponent(result.name) %>" title="<%= result.name %>">
-            <%= result.name %>: <%= result.summary %>
-        </a></li>
-        <%_ }); -%>
-    </ul>
+    <%- include('/package_list.ejs', { packages: results }) -%>
 <%- include('/footer.ejs') -%>

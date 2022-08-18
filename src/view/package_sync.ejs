@@ -1,9 +1,10 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <form method="post">
-        <label for="package_name">Import package</label>
-        <div class="inline_form">
-            <input id="package_name" name="packageName" type="text" placeholder="author/project" />
-            <button type="submit">Add</button>
-        </div>
+    <form method="post" class="inline_form">
+        <input id="package_name" name="packageName" type="text" placeholder="author/project" autofocus />
+        <button type="submit">Import</button>
     </form>
+
+    <p>Clicking <i>Import</i> will clone the project from Github and generate documentation for any semver-formatted tag we can find. This will also import new versions for previously imported packages.</p>
+
+    <p>At the moment, there is no way to un-register a package or a version.</p>
 <%- include('/footer.ejs') -%>

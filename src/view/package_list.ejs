@@ -1,0 +1,11 @@
+<ul class="package-list">
+    <%_ packages.forEach(function(package) { -%>
+    <li>
+        <a class="package-name" href="/package/<%= encodeURIComponent(package.name) %>" title="<%= package.name %>">
+            <%= package.name %>
+        </a>
+        <div class="package-version"><%= package.version %></div>
+        <div class="package-summary"><%= package.summary %></div>
+    </li>
+    <%_ }); -%>
+</ul>
