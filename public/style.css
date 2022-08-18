@@ -26,10 +26,6 @@ a {
   color: var(--accent);
 }
 
-a:hover {
-  color: var(--accent-background);
-}
-
 input:hover {
   border-color: var(--accent) !important;
 }
@@ -45,11 +41,6 @@ input:focus {
 button {
   background-color: var(--accent);
   border-color: var(--accent);
-}
-
-button:hover {
-  background-color: var(--accent-background);
-  border-color: var(--accent-background);
 }
 
 pre {
