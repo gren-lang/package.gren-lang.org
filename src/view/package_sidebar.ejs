@@ -1,13 +1,22 @@
-<ul>
-    <li><a href="<%= packageOverviewLink %>" title="Overview">
-        Overview
-    </a></li>
+<aside id="package-links">
+    <ul>
+        <li><a href="<%= packageOverviewLink %>" title="Overview">
+            Overview
+        </a></li>
+        <li><a href="<%= packageSourceLink %>" title="Source">
+            Source
+        </a></li>
+    </ul>
+
     <%_ for (let [group, modules] of Object.entries(exposedModules)) { -%>
-    <li><%= group -%></li>
-    <%_ modules.forEach(function(module) { -%>
-    <li><a href="<%- module.link %>" title="<%= module.name %>">
-        <%= module.name %>
-    </a></li>
-    <%_ }); -%>
+    <h3><%= group === '' ? 'Modules' : group -%></h3>
+    <ul>
+        <%_ modules.forEach(function(module) { -%>
+        <li><a href="<%- module.link %>" title="<%= module.name %>">
+            <%= module.name %>
+        </a></li>
+        <%_ }); -%>
+    </ul>
     <%_ } -%>
 </ul>
+</aside>

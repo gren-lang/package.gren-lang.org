@@ -112,7 +112,16 @@ main > .content ul.package-list > li > .package-version {
   margin-left: 0.5rem;
 }
 
-main > .content ul.package-list > li > .package-summary {
+main > .content > #module-page {
+    display: flex;
+}
+
+main > .content > #module-page > #package-links {
+    padding-right: 2rem;
+}
+
+main > .content > #module-page > #package-links ul {
+    list-style: none;
 }
 
 main > footer {

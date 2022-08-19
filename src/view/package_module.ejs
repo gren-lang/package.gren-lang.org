@@ -1,32 +1,36 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <h1><%= moduleName %></h1>
+    <section id="module-page">
+        <%- include('/package_sidebar.ejs', { exposedModules }) -%>
 
-    <%_ moduleDocs.forEach(function(block) { -%>
-    <%_ if (block.constructor.name === 'Alias') { -%>
-      <h2>type alias <%= block.name %> <%= block.args %> =</h2>
-      <%= block.type %>
-      <%- block.comment %>
-    <%_ } -%>
+        <section>
+            <h1><%= moduleName %></h1>
 
-    <%_ if (block.constructor.name === 'Union') { -%>
-      <h2>type <%= block.name %> <%= block.args %></h2>
-      <%- block.comment %>
-    <%_ } -%>
+            <%_ moduleDocs.forEach(function(block) { -%>
+            <%_ if (block.constructor.name === 'Alias') { -%>
+              <h2>type alias <%= block.name %> <%= block.args %> =</h2>
+              <%= block.type %>
+              <%- block.comment %>
+            <%_ } -%>
 
-    <%_ if (block.constructor.name === 'Binop') { -%>
-      <h2><%= block.name %> : <%= block.type -%></h2>
-      <%- block.comment %>
-    <%_ } -%>
+            <%_ if (block.constructor.name === 'Union') { -%>
+              <h2>type <%= block.name %> <%= block.args %></h2>
+              <%- block.comment %>
+            <%_ } -%>
 
-    <%_ if (block.constructor.name === 'Value') { -%>
-      <h2><%= block.name %> : <%= block.type %></h2>
-      <%- block.comment %>
-    <%_ } -%>
+            <%_ if (block.constructor.name === 'Binop') { -%>
+              <h2><%= block.name %> : <%= block.type -%></h2>
+              <%- block.comment %>
+            <%_ } -%>
 
-    <%_ if (block.constructor.name === 'Markdown') { -%>
-      <%- block.html %>
-    <%_ } -%>
-    <%_ }); -%>
+            <%_ if (block.constructor.name === 'Value') { -%>
+              <h2><%= block.name %> : <%= block.type %></h2>
+              <%- block.comment %>
+            <%_ } -%>
 
-    <%- include('/package_sidebar.ejs', { exposedModules }) -%>
+            <%_ if (block.constructor.name === 'Markdown') { -%>
+              <%- block.html %>
+            <%_ } -%>
+            <%_ }); -%>
+        </section>
+    </section>
 <%- include('/footer.ejs') -%>

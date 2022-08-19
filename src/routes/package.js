@@ -73,6 +73,7 @@ router.get(
             package: packageName,
             version: version,
           }),
+          packageSourceLink: githubUrl(packageName),
           readme: renderedMarkdown,
           exposedModules: exposedModules,
         }),
@@ -152,6 +153,7 @@ router.get(
             package: packageName,
             version: version,
           }),
+          packageSourceLink: githubUrl(packageName),
           moduleName: moduleName,
           moduleDocs: moduleDocumentation,
           exposedModules: exposedModules,
@@ -163,6 +165,10 @@ router.get(
     });
   }
 );
+
+function githubUrl(packageName) {
+    return `https://github.com/${packageName}.git`;
+}
 
 async function prepareModuleDocumentation(moduleInfo) {
   const docSplit = moduleInfo.comment.split("\n@docs");

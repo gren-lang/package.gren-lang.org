@@ -1,5 +1,8 @@
 <%- include('/header.ejs', { refresh: false }) -%>
-    <%- readme %>
-
-    <%- include('/package_sidebar.ejs', { exposedModules }) -%>
+    <section id="module-page">
+        <%- include('/package_sidebar.ejs', { exposedModules }) -%>
+        <section>
+            <%- readme %>
+        </section>
+    </section>
 <%- include('/footer.ejs') -%>
