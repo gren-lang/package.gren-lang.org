@@ -109,61 +109,60 @@ main > .content ul.package-list > li > .package-version {
 }
 
 main > .content > #module-docs {
-    display: inline-block;
-    max-width: 55rem;
+  display: inline-block;
+  max-width: 55rem;
 }
 
 main > .content > #module-docs h1 {
-    font-size: 3.5rem;
+  font-size: 3.5rem;
 }
 
 main > .content > #module-docs > .block {
-    margin-top: 3rem;
-    margin-bottom: 3rem;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
 }
 
 main > .content > #module-docs > .block .definition {
-    display: inline-block;
-    font-size: 2rem;
+  display: inline-block;
+  font-size: 2rem;
 }
 
 main > .content > #module-docs > .union .definition .indented:last-child {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 main > .content > #module-docs > .alias .definition .indented:last-child {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 main > .content > #module-docs > .block .definition .indented {
-    padding-left: 3rem;
+  padding-left: 3rem;
 }
 
 main > .content > #module-docs > .block .comment p {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 main > .content > #package-links {
-    display: inline-block;
-    vertical-align: top;
-    padding-left: 4rem;
+  display: inline-block;
+  vertical-align: top;
+  padding-left: 4rem;
 }
 
 main > .content > #package-links ul {
-    list-style: none;
+  list-style: none;
 }
 
 @media screen and (max-width: 50rem) {
-    main > .content > #module-docs {
-        display: block;
-        max-width: 100%;
-    }
+  main > .content > #module-docs {
+    display: block;
+    max-width: 100%;
+  }
 
-    main > .content > #package-links {
-        display: block;
-        vertical-align: top;
-        padding-left: 0;
-    }
+  main > .content > #package-links {
+    display: block;
+    vertical-align: top;
+    padding-left: 0;
+  }
 }
-

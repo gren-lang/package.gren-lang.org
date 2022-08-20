@@ -544,8 +544,8 @@ WHERE module_id = $moduleId
 }
 
 export function getCorePackages() {
-    return db.query(
-        `
+  return db.query(
+    `
 SELECT package.name, v1.version, v1.summary
 FROM package_version v1
 JOIN package ON package.id = v1.package_id
@@ -556,13 +556,13 @@ WHERE v2.package_id IS NULL
     AND package.name LIKE 'gren-lang/%'
 ORDER BY package.name;
 `,
-        {}
-    );
+    {}
+  );
 }
 
 export function getRecentlyUpdatedPackages() {
-    return db.query(
-        `
+  return db.query(
+    `
 SELECT package.name, v1.version, v1.summary
 FROM package_version v1
 JOIN package ON package.id = v1.package_id
@@ -573,8 +573,8 @@ WHERE v2.package_id IS NULL
 ORDER BY v1.imported_epoch DESC
 LIMIT 10;
 `,
-        {}
-    );
+    {}
+  );
 }
 
 // SEARCH

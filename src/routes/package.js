@@ -167,7 +167,7 @@ router.get(
 );
 
 function githubUrl(packageName) {
-    return `https://github.com/${packageName}.git`;
+  return `https://github.com/${packageName}.git`;
 }
 
 async function prepareModuleDocumentation(moduleInfo) {
@@ -243,7 +243,7 @@ function Union(name, comment, args, cases) {
 }
 
 function formatCases(cases) {
-    return cases.map((c) => [c[0], c[1].join(" ")].join(" "));
+  return cases.map((c) => [c[0], c[1].join(" ")].join(" "));
 }
 
 function Alias(name, comment, args, type) {
@@ -254,7 +254,7 @@ function Alias(name, comment, args, type) {
 }
 
 function stripModulesFromTypes(typeSignature) {
-    return typeSignature.replaceAll(/\w*\./g, '');
+  return typeSignature.replaceAll(/\w*\./g, "");
 }
 
 function constructValue(name, values, binops, unions, aliases) {
