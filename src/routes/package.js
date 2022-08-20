@@ -68,6 +68,7 @@ router.get(
       html: () =>
         views.packageOverview({
           packageName: packageName,
+          packageNameShort: packageName.split('/')[1],
           packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
             package: packageName,
@@ -148,6 +149,7 @@ router.get(
       html: () =>
         views.packageModule({
           packageName: packageName,
+          packageNameShort: packageName.split('/')[1],
           packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
             package: packageName,

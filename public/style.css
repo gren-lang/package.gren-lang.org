@@ -146,15 +146,20 @@ main > .content > #module-docs > .block .comment p {
 
 main > .content > #package-links {
   display: inline-block;
+  max-width: 20rem;
   vertical-align: top;
   padding-left: 4rem;
+}
+
+main > .content > #package-links h3 > small {
+    font-size: 1.5rem;
 }
 
 main > .content > #package-links ul {
   list-style: none;
 }
 
-@media screen and (max-width: 50rem) {
+@media only screen and (max-width: 50rem) {
   main > .content > #module-docs {
     display: block;
     max-width: 100%;
@@ -162,6 +167,7 @@ main > .content > #package-links ul {
 
   main > .content > #package-links {
     display: block;
+    max-width: 100%;
     vertical-align: top;
     padding-left: 0;
   }
