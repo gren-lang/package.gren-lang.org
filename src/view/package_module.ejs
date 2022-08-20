@@ -4,7 +4,7 @@
 
         <%_ moduleDocs.forEach(function(block) { -%>
         <%_ if (block.constructor.name === 'Alias') { -%>
-        <div id="<%= block.name %>" class="block alias">
+        <div id="<%= block.name %>" class="block alias anchor">
             <span class="definition">
                 type alias <a href="#<%= block.name %>"><%= block.name %></a> <%= block.args.join(" ") %> =
                 <div class="indented"><%= block.type %></div>
@@ -16,7 +16,7 @@
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Union') { -%>
-        <div id="<%= block.name %>" class="block union">
+        <div id="<%= block.name %>" class="block union anchor">
             <span class="definition">
                 type <a href="#<%= block.name %>"><%= block.name %></a>
                 <%_ block.cases.forEach(function(c, idx) { -%>
@@ -30,7 +30,7 @@
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Binop') { -%>
-        <div id="<%= block.name %>" class="block binop">
+        <div id="<%= block.name %>" class="block binop anchor">
             <span class="definition">
                 <a href="#<%= block.name %>">(<%= block.name %>)</a> : <%= block.type %>
             </span>
@@ -41,7 +41,7 @@
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Value') { -%>
-        <div id="<%= block.name %>" class="block value">
+        <div id="<%= block.name %>" class="block value anchor">
             <span class="definition">
                 <a href="#<%= block.name %>"><%= block.name %></a> : <%= block.type %>
             </span>
