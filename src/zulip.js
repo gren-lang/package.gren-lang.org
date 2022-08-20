@@ -14,9 +14,10 @@ export async function sendNewPackageNotification(name, version, summary) {
     type: "stream",
     subject: name,
     content: `
-Version ${version} was just published.
+Version ${version} is now available!
 
-${summary}
+Summary: ${summary}
+Link: ${config.canonicalUrl}/package/${encodeURIComponent(name)}/version/${version}/overview
 `,
   });
 
