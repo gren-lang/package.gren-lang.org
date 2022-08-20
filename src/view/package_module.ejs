@@ -4,24 +4,51 @@
 
         <%_ moduleDocs.forEach(function(block) { -%>
         <%_ if (block.constructor.name === 'Alias') { -%>
-          <h2>type alias <%= block.name %> <%= block.args %> =</h2>
-          <%= block.type %>
-          <%- block.comment %>
+        <div id="<%= block.name %>" class="block alias">
+            <span class="definition">
+                type alias <a href="#<%= block.name %>"><%= block.name %></a> <%= block.args.join(" ") %> =
+                <div class="indented"><%= block.type %></div>
+            </span>
+            <span class="comment">
+                <%- block.comment %>
+            </span>
+        </div>
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Union') { -%>
-          <h2>type <%= block.name %> <%= block.args %></h2>
-          <%- block.comment %>
+        <div id="<%= block.name %>" class="block union">
+            <span class="definition">
+                type <a href="#<%= block.name %>"><%= block.name %></a>
+                <%_ block.cases.forEach(function(c, idx) { -%>
+                <div class="indented"><%= idx === 0 ? '=' : '|' %> <%= c -%></div>
+                <%_ }) -%>
+            </span>
+            <span class="comment">
+                <%- block.comment %>
+            </span>
+        </div>
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Binop') { -%>
-          <h2><%= block.name %> : <%= block.type -%></h2>
-          <%- block.comment %>
+        <div id="<%= block.name %>" class="block binop">
+            <span class="definition">
+                <a href="#<%= block.name %>">(<%= block.name %>)</a> : <%= block.type %>
+            </span>
+            <span class="comment">
+                <%- block.comment %>
+            </span>
+        </div>
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Value') { -%>
-          <h2><%= block.name %> : <%= block.type %></h2>
-          <%- block.comment %>
+        <div id="<%= block.name %>" class="block value">
+            <span class="definition">
+                <a href="#<%= block.name %>"><%= block.name %></a> : <%= block.type %>
+            </span>
+            <span class="comment">
+                <%- block.comment %>
+            </span>
+        </div>
         <%_ } -%>
 
         <%_ if (block.constructor.name === 'Markdown') { -%>

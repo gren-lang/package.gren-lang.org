@@ -225,36 +225,49 @@ function Markdown(txt) {
 function Value(name, comment, type) {
   this.name = name;
   this.comment = markdown.render(comment);
-  this.type = type;
+  this.type = stripModulesFromTypes(type);
 }
 
 function Binop(name, comment, type) {
   this.name = name;
   this.comment = markdown.render(comment);
-  this.type = type;
+  this.type = stripModulesFromTypes(type);
 }
 
 function Union(name, comment, args, cases) {
   this.name = name;
   this.comment = markdown.render(comment);
   this.args = args;
-  this.cases = cases;
+  this.cases = formatCases(cases);
+  console.log(this.cases);
+}
+
+function formatCases(cases) {
+    return cases.map((c) => [c[0], c[1].join(" ")].join(" "));
 }
 
 function Alias(name, comment, args, type) {
   this.name = name;
   this.comment = markdown.render(comment);
   this.args = args;
-  this.type = type;
+  this.type = stripModulesFromTypes(type);
+}
+
+function stripModulesFromTypes(typeSignature) {
+    return typeSignature.replaceAll(/\w*\./g, '');
 }
 
 function constructValue(name, values, binops, unions, aliases) {
+  if (name.startsWith("(")) {
+    name = name.slice(1, -1);
+  }
+
   let data = values[name];
   if (data) {
     return new Value(name, data.comment, data.type);
   }
 
-  data = binops[name.slice(1, -1)];
+  data = binops[name];
   if (data) {
     return new Binop(name, data.comment, data.type);
   }

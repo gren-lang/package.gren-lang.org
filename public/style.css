@@ -57,10 +57,6 @@ main > header {
   height: 5.2rem;
   line-height: 5.2rem;
   width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
 }
 
 main > header nav {
@@ -74,8 +70,8 @@ main > header img {
 }
 
 main > .content {
-  padding-top: 7rem;
-  padding-bottom: 4rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 
 main > .content .inline_form {
@@ -117,6 +113,37 @@ main > .content > #module-docs {
     max-width: 55rem;
 }
 
+main > .content > #module-docs h1 {
+    font-size: 3.5rem;
+}
+
+main > .content > #module-docs > .block {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+main > .content > #module-docs > .block .definition {
+    display: inline-block;
+    font-size: 2rem;
+}
+
+main > .content > #module-docs > .union .definition .indented:last-child {
+    margin-bottom: 1rem;
+}
+
+main > .content > #module-docs > .alias .definition .indented:last-child {
+    margin-bottom: 1rem;
+}
+
+main > .content > #module-docs > .block .definition .indented {
+    padding-left: 3rem;
+}
+
+main > .content > #module-docs > .block .comment p {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
 main > .content > #package-links {
     display: inline-block;
     vertical-align: top;
@@ -140,18 +167,3 @@ main > .content > #package-links ul {
     }
 }
 
-main > footer {
-  background-color: white;
-  height: 3.5rem;
-  line-height: 3.5rem;
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-}
-
-main > footer small {
-  display: block;
-  text-align: center;
-}

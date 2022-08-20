@@ -513,7 +513,7 @@ WHERE module_id = $moduleId
     const cases = JSON.parse(row.cases);
     result[row.name] = {
       ...row,
-      ...cases,
+      cases: cases,
       args: row.args.split(","),
     };
   }
