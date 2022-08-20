@@ -239,7 +239,6 @@ function Union(name, comment, args, cases) {
   this.comment = markdown.render(comment);
   this.args = args;
   this.cases = formatCases(cases);
-  console.log(this.cases);
 }
 
 function formatCases(cases) {
