@@ -52,6 +52,14 @@ pre {
     margin-top: -7rem;
 }
 
+.icon {
+    font-size: 3rem;
+}
+
+.mobile-hidden {
+    display: none;
+}
+
 .container {
   max-width: 80rem;
 }
@@ -72,6 +80,7 @@ main > header nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 100%;
 }
 
 main > header img {
@@ -160,7 +169,8 @@ main > .content > #package-links {
 }
 
 main > .content > #package-links h3 > small {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    margin-left: 0.25rem;
 }
 
 main > .content > #package-links ul {
@@ -178,5 +188,9 @@ main > .content > #package-links ul {
     max-width: 100%;
     vertical-align: top;
     padding-left: 0;
+  }
+
+  .mobile-hidden {
+    display: block;
   }
 }
