@@ -112,16 +112,32 @@ main > .content ul.package-list > li > .package-version {
   margin-left: 0.5rem;
 }
 
-main > .content > #module-page {
-    display: flex;
+main > .content > #module-docs {
+    display: inline-block;
+    max-width: 55rem;
 }
 
-main > .content > #module-page > #package-links {
-    padding-right: 2rem;
+main > .content > #package-links {
+    display: inline-block;
+    vertical-align: top;
+    padding-left: 4rem;
 }
 
-main > .content > #module-page > #package-links ul {
+main > .content > #package-links ul {
     list-style: none;
+}
+
+@media screen and (max-width: 50rem) {
+    main > .content > #module-docs {
+        display: block;
+        max-width: 100%;
+    }
+
+    main > .content > #package-links {
+        display: block;
+        vertical-align: top;
+        padding-left: 0;
+    }
 }
 
 main > footer {
