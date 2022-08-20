@@ -42,6 +42,7 @@ export const packageSync = compileTemplate("package_sync");
 export const packageJobs = compileTemplate("package_jobs");
 export const packageSearch = compileTemplate("package_search");
 export const packageOverview = compileTemplate("package_overview");
+export const packageVersions = compileTemplate("package_versions");
 export const packageModule = compileTemplate("package_module");
 export const rateLimit = compileTemplate("rate_limit");
 export const notFound = compileTemplate("not_found");

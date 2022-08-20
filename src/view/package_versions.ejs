@@ -1,0 +1,10 @@
+<%- include('/header.ejs', { title: `${packageNameShort} versions | Packages`, refresh: false, sideButtonType: 'NONE' }) -%>
+    <h3>Versions for <%= packageName %></h3>
+    <ul>
+        <%_ versions.forEach(function(version) { -%>
+        <li><a href="<%= version.link %>" title="Read docs for v<%= version.value %>">
+            <%= version.value %>
+        </a></li>
+        <%_ }) -%>
+    </ul>
+<%- include('/footer.ejs') -%>

@@ -41,6 +41,34 @@ router.get("package-redirect", "/:package", async (ctx, next) => {
   );
 });
 
+router.get("package-versions", "/:package/versions", async (ctx, next) => {
+  const packageName = ctx.params.package;
+  const versions = await dbPackage.existingVersions(packageName);
+
+  if (versions.length === 0) {
+    ctx.status = 404;
+    return;
+  }
+
+  views.render(ctx, {
+    html: () => views.packageVersions({
+        packageName: packageName,
+        packageNameShort: packageName.split('/')[1],
+        versions: versions.map((v) => {
+            return {
+                value: v,
+                link: router.url('package-overview', {
+                    package: packageName,
+                    version: v
+                })
+            };
+        })
+    }),
+    json: () => versions,
+    text: () => versions.join("\n"),
+  });
+});
+
 router.get(
   "package-overview",
   "/:package/version/:version/overview",
@@ -73,6 +101,9 @@ router.get(
           packageOverviewLink: router.url("package-overview", {
             package: packageName,
             version: version,
+          }),
+          packageVersionsLink: router.url("package-versions", {
+            package: packageName
           }),
           packageSourceLink: githubUrl(packageName),
           readme: renderedMarkdown,
@@ -154,6 +185,9 @@ router.get(
           packageOverviewLink: router.url("package-overview", {
             package: packageName,
             version: version,
+          }),
+          packageVersionsLink: router.url("package-versions", {
+            package: packageName
           }),
           packageSourceLink: githubUrl(packageName),
           moduleName: moduleName,
