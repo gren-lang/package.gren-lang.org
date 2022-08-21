@@ -15,6 +15,7 @@
 
     <%_ for (let [group, modules] of Object.entries(exposedModules)) { -%>
     <h3><%= group === '' ? 'Modules' : group -%></h3>
+
     <ul>
         <%_ modules.forEach(function(module) { -%>
         <li><a href="<%- module.link %>" title="<%= module.name %>">

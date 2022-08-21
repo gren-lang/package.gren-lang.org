@@ -118,7 +118,7 @@ router.get(
             author: author,
             project: project,
           }),
-          packageSourceLink: githubUrl(packageName),
+          packageSourceLink: githubUrl(packageName, version),
           readme: renderedMarkdown,
           exposedModules: exposedModules,
         }),
@@ -207,7 +207,7 @@ router.get(
             author: author,
             project: project,
           }),
-          packageSourceLink: githubUrl(packageName),
+          packageSourceLink: githubUrl(packageName, version),
           moduleName: moduleName,
           moduleDocs: moduleDocumentation,
           exposedModules: exposedModules,
@@ -220,8 +220,8 @@ router.get(
   }
 );
 
-function githubUrl(packageName) {
-  return `https://github.com/${packageName}.git`;
+function githubUrl(packageName, version) {
+  return `https://github.com/${packageName}/tree/${version}`;
 }
 
 async function prepareModuleDocumentation(moduleInfo) {
