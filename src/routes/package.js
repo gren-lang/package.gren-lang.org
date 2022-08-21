@@ -23,8 +23,9 @@ router.get("search", "/search", async (ctx, next) => {
   });
 });
 
-router.get("package-redirect", "/:package", async (ctx, next) => {
-  const packageName = ctx.params.package;
+router.get("package-redirect", "/:author/:project", async (ctx, next) => {
+  const { author, project } = ctx.params;
+  const packageName = packageNameFromCtx(ctx);
   const latestVersion = await dbPackage.latestVersion(packageName);
 
   if (latestVersion == null) {
@@ -35,14 +36,20 @@ router.get("package-redirect", "/:package", async (ctx, next) => {
   ctx.status = 303;
   ctx.redirect(
     router.url("package-overview", {
-      package: packageName,
+      author: author,
+      project: project,
       version: latestVersion,
     })
   );
 });
 
-router.get("package-versions", "/:package/versions", async (ctx, next) => {
-  const packageName = ctx.params.package;
+function packageNameFromCtx(ctx) {
+  return `${ctx.params.author}/${ctx.params.project}`;
+}
+
+router.get("package-versions", "/:author/:project/versions", async (ctx, next) => {
+  const { author, project } = ctx.params;
+  const packageName = packageNameFromCtx(ctx);
   const versions = await dbPackage.existingVersions(packageName);
 
   if (versions.length === 0) {
@@ -58,7 +65,8 @@ router.get("package-versions", "/:package/versions", async (ctx, next) => {
             return {
                 value: v,
                 link: router.url('package-overview', {
-                    package: packageName,
+                    author: author,
+                    project: project,
                     version: v
                 })
             };
@@ -71,9 +79,11 @@ router.get("package-versions", "/:package/versions", async (ctx, next) => {
 
 router.get(
   "package-overview",
-  "/:package/version/:version/overview",
+  "/:author/:project/version/:version/overview",
   async (ctx, next) => {
-    const packageName = ctx.params.package;
+    const author = ctx.params.author;
+    const project = ctx.params.project;
+    const packageName = packageNameFromCtx(ctx);
     const version = ctx.params.version;
 
     const readme = await dbPackage.getReadme(packageName, version);
@@ -87,7 +97,8 @@ router.get(
 
     const modules = await dbPackage.getModuleList(packageName, version);
     const exposedModules = prepareExposedModulesView(
-      packageName,
+      author,
+      project,
       version,
       modules
     );
@@ -99,11 +110,13 @@ router.get(
           packageNameShort: packageName.split('/')[1],
           packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
-            package: packageName,
+            author: author,
+            project: project,
             version: version,
           }),
           packageVersionsLink: router.url("package-versions", {
-            package: packageName
+            author: author,
+            project: project,
           }),
           packageSourceLink: githubUrl(packageName),
           readme: renderedMarkdown,
@@ -121,7 +134,7 @@ router.get(
   }
 );
 
-function prepareExposedModulesView(packageName, version, modules) {
+function prepareExposedModulesView(author, project, version, modules) {
   const exposedModules = {};
 
   for (let module of modules) {
@@ -129,7 +142,7 @@ function prepareExposedModulesView(packageName, version, modules) {
     const existingCategoryValues = exposedModules[category] || [];
 
     existingCategoryValues.push(
-      prepareModuleForView(packageName, version, module.name)
+      prepareModuleForView(author, project, version, module.name)
     );
 
     exposedModules[category] = existingCategoryValues;
@@ -138,11 +151,12 @@ function prepareExposedModulesView(packageName, version, modules) {
   return exposedModules;
 }
 
-function prepareModuleForView(packageName, version, moduleName) {
+function prepareModuleForView(author, project, version, moduleName) {
   return {
     name: moduleName,
     link: router.url("package-module", {
-      package: packageName,
+      author: author,
+      project: project,
       version: version,
       module: moduleName,
     }),
@@ -151,9 +165,10 @@ function prepareModuleForView(packageName, version, moduleName) {
 
 router.get(
   "package-module",
-  "/:package/version/:version/module/:module",
+  "/:author/:project/version/:version/module/:module",
   async (ctx, next) => {
-    const packageName = ctx.params.package;
+    const { author, project } = ctx.params;
+    const packageName = packageNameFromCtx(ctx);
     const version = ctx.params.version;
     const moduleName = ctx.params.module;
 
@@ -171,7 +186,8 @@ router.get(
 
     const modules = await dbPackage.getModuleList(packageName, version);
     const exposedModules = prepareExposedModulesView(
-      packageName,
+      author,
+      project,
       version,
       modules
     );
@@ -183,11 +199,13 @@ router.get(
           packageNameShort: packageName.split('/')[1],
           packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
-            package: packageName,
+            author: author,
+            project: project,
             version: version,
           }),
           packageVersionsLink: router.url("package-versions", {
-            package: packageName
+            author: author,
+            project: project,
           }),
           packageSourceLink: githubUrl(packageName),
           moduleName: moduleName,
