@@ -47,35 +47,40 @@ function packageNameFromCtx(ctx) {
   return `${ctx.params.author}/${ctx.params.project}`;
 }
 
-router.get("package-versions", "/:author/:project/versions", async (ctx, next) => {
-  const { author, project } = ctx.params;
-  const packageName = packageNameFromCtx(ctx);
-  const versions = await dbPackage.existingVersions(packageName);
+router.get(
+  "package-versions",
+  "/:author/:project/versions",
+  async (ctx, next) => {
+    const { author, project } = ctx.params;
+    const packageName = packageNameFromCtx(ctx);
+    const versions = await dbPackage.existingVersions(packageName);
 
-  if (versions.length === 0) {
-    ctx.status = 404;
-    return;
-  }
+    if (versions.length === 0) {
+      ctx.status = 404;
+      return;
+    }
 
-  views.render(ctx, {
-    html: () => views.packageVersions({
-        packageName: packageName,
-        packageNameShort: packageName.split('/')[1],
-        versions: versions.map((v) => {
+    views.render(ctx, {
+      html: () =>
+        views.packageVersions({
+          packageName: packageName,
+          packageNameShort: packageName.split("/")[1],
+          versions: versions.map((v) => {
             return {
-                value: v,
-                link: router.url('package-overview', {
-                    author: author,
-                    project: project,
-                    version: v
-                })
+              value: v,
+              link: router.url("package-overview", {
+                author: author,
+                project: project,
+                version: v,
+              }),
             };
-        })
-    }),
-    json: () => versions,
-    text: () => versions.join("\n"),
-  });
-});
+          }),
+        }),
+      json: () => versions,
+      text: () => versions.join("\n"),
+    });
+  }
+);
 
 router.get(
   "package-overview",
@@ -107,7 +112,7 @@ router.get(
       html: () =>
         views.packageOverview({
           packageName: packageName,
-          packageNameShort: packageName.split('/')[1],
+          packageNameShort: packageName.split("/")[1],
           packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
             author: author,
@@ -196,7 +201,7 @@ router.get(
       html: () =>
         views.packageModule({
           packageName: packageName,
-          packageNameShort: packageName.split('/')[1],
+          packageNameShort: packageName.split("/")[1],
           packageVersion: version,
           packageOverviewLink: router.url("package-overview", {
             author: author,
@@ -296,10 +301,9 @@ function Union(name, comment, args, cases) {
 }
 
 function formatCases(cases) {
-  return cases.map((c) => [
-      c[0],
-      stripModulesFromTypes(c[1].join(" "))
-  ].join(" "));
+  return cases.map((c) =>
+    [c[0], stripModulesFromTypes(c[1].join(" "))].join(" ")
+  );
 }
 
 function Alias(name, comment, args, type) {

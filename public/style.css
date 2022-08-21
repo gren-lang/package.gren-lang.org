@@ -48,16 +48,16 @@ pre {
 }
 
 .anchor {
-    padding-top: 7rem;
-    margin-top: -7rem;
+  padding-top: 7rem;
+  margin-top: -7rem;
 }
 
 .icon {
-    font-size: 3rem;
+  font-size: 3rem;
 }
 
 .mobile-hidden {
-    display: none;
+  display: none;
 }
 
 .container {
@@ -169,8 +169,8 @@ main > .content > #package-links {
 }
 
 main > .content > #package-links h3 > small {
-    font-size: 1.25rem;
-    margin-left: 0.25rem;
+  font-size: 1.25rem;
+  margin-left: 0.25rem;
 }
 
 main > .content > #package-links ul {

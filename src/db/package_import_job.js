@@ -89,7 +89,7 @@ export function scheduleJobForRetry(id, numberOfTimesRetried, reason) {
   const nextTimeIncrease = retryTimeIncreaseInSeconds[numberOfTimesRetried];
 
   if (!nextTimeIncrease) {
-    return stopJob(id, 'No more retries.');
+    return stopJob(id, "No more retries.");
   }
 
   return db.run(
@@ -105,7 +105,7 @@ WHERE
     {
       $id: id,
       $reason: `${reason}, will retry`,
-      $nextTimeIncrease: nextTimeIncrease
+      $nextTimeIncrease: nextTimeIncrease,
     }
   );
 }
