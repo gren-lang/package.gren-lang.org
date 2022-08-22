@@ -10,8 +10,7 @@
     "#routes/*": "./src/routes/*.js"
   },
   "scripts": {
-    "start": "node build/index.cjs",
-    "build": "esbuild index.js --platform=node --bundle --external:./node_modules/* --outfile=build/index.cjs",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -e ejs,js,css ./src/app.js",
     "prettier": "prettier -w ."
   },
@@ -37,7 +36,6 @@
     "zulip-js": "^2.0.9"
   },
   "devDependencies": {
-    "esbuild": "^0.15.5",
     "prettier": "2.7.1"
   }
 }
