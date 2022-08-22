@@ -1,8 +1,17 @@
 {
   "name": "gren-packages",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "The server powering package.gren-lang.org",
+  "keywords": [
+    "gren",
+    "lang",
+    "language",
+    "doc",
+    "documentation",
+    "package",
+    "preview"
+  ],
   "main": "index.js",
   "bin": {
     "gren-doc-preview": "bin/gren-doc-preview.js"
@@ -19,6 +28,10 @@
   },
   "author": "Robin Heggelund Hansen",
   "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/gren-lang/package.gren-lang.org/issues"
+  },
+  "homepage": "https://packages.gren-lang.org",
   "engines": {
     "node": "16.*"
   },
