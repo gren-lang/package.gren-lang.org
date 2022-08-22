@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "The server powering package.gren-lang.org",
   "main": "index.js",
+  "bin": {
+    "gren-doc-preview": "bin/gren-doc-preview.js"
+  },
   "imports": {
     "#src/*": "./src/*.js",
     "#db/*": "./src/db/*.js",

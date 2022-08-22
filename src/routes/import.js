@@ -1,7 +1,7 @@
 import Router from "@koa/router";
 import * as childProcess from "child_process";
-import { default as semver } from "semver";
 import * as util from "util";
+import { default as semver } from "semver";
 import { xdgCache } from "xdg-basedir";
 import * as path from "path";
 import * as fs from "fs/promises";
@@ -289,34 +289,6 @@ async function buildDocs(job) {
   }
 
   await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepAddToFTS);
-}
-
-function prepareExposedModules(exposedModules) {
-  const result = {};
-
-  if (Array.isArray(exposedModules)) {
-    for (let order = 0; order < exposedModules.length; order++) {
-      const moduleName = exposedModules[order];
-      result[moduleName] = {
-        order: order,
-        category: null,
-      };
-    }
-  } else {
-    let order = 0;
-    for (let category in exposedModules) {
-      for (let moduleName of exposedModules[category]) {
-        result[moduleName] = {
-          order: order,
-          category: category,
-        };
-
-        order++;
-      }
-    }
-  }
-
-  return result;
 }
 
 async function addToFTS(job) {

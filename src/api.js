@@ -10,6 +10,9 @@ import { router as importRouter } from "#routes/import";
 import { router as packageRouter } from "#routes/package";
 import * as views from "#src/views";
 
+import * as url from 'url';
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
 export const api = new Koa();
 
 const router = new Router();
@@ -26,7 +29,7 @@ api.use(
 api.use(rateLimit);
 
 api.use(
-  serve("./public", {
+  serve(__dirname + "../public", {
     maxage: 3600 * 1000,
     index: null,
     gzip: false,
