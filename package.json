@@ -1,5 +1,5 @@
 {
-  "name": "package.gren-lang.org",
+  "name": "gren-packages",
   "type": "module",
   "version": "1.0.0",
   "description": "The server powering package.gren-lang.org",
