@@ -1,7 +1,7 @@
 {
   "name": "gren-packages",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The server powering package.gren-lang.org",
   "main": "index.js",
   "bin": {
