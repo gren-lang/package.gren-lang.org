@@ -11,6 +11,7 @@ import * as log from "#src/log";
 import * as db from "#src/db";
 import * as views from "#src/views";
 import * as zulip from "#src/zulip";
+import * as build from "#src/build";
 
 import * as dbPackageImportJob from "#db/package_import_job";
 import * as dbPackage from "#db/package";
@@ -230,147 +231,16 @@ function getLocalRepoPath(job) {
 }
 
 async function buildDocs(job) {
+  let buildResult;
+
   try {
-    await gren.downloadCompiler();
-    const compilerPath = gren.compilerPath;
-    const compilerArgs = ["make", "--docs=./docs.json", "--report=json"];
-
-    const localRepoPath = getLocalRepoPath(job);
-
-    await execFile(compilerPath, compilerArgs, {
-      cwd: localRepoPath,
-      env: {
-        ...process.env,
-        GREN_HOME: path.join(localRepoPath, ".gren", "home"),
-      },
-      timeout: 30_000,
-    });
-
-    const metadataStr = await fs.readFile(
-      path.join(localRepoPath, "gren.json"),
-      {
-        encoding: "utf-8",
-      }
-    );
-
-    const readmeStr = await fs.readFile(path.join(localRepoPath, "README.md"), {
-      encoding: "utf-8",
-    });
-
-    const docsStr = await fs.readFile(path.join(localRepoPath, "docs.json"), {
-      encoding: "utf-8",
-    });
-
-    const metadataObj = JSON.parse(metadataStr);
-    const exposedModules = prepareExposedModules(
-      metadataObj["exposed-modules"]
-    );
-    const modules = JSON.parse(docsStr);
-
-    const pkg = await dbPackage.upsert(job.name, job.url);
-
-    try {
-      await db.run("BEGIN");
-
-      let versioned;
-      try {
-        versioned = await dbPackage.registerVersion(
-          pkg.id,
-          metadataObj.version,
-          metadataObj.license,
-          metadataObj["gren-version"],
-          metadataObj.summary,
-          readmeStr
-        );
-      } catch (err) {
-        // 19: SQLITE_CONSTRAINT, means row already exists
-        if (error.errno === 19) {
-          log.info(
-            `Package ${job.name} at version ${job.version} already exist in our system`,
-            job
-          );
-          await db.run("ROLLBACK");
-          await dbPackageImportJob.stopJob(job.id, `Version already exist`);
-          return;
-        } else {
-          throw err;
-        }
-      }
-
-      for (let module of modules) {
-        const moduleMeta = exposedModules[module.name];
-        const moduleRow = await dbPackage.registerModule(
-          versioned.id,
-          module.name,
-          moduleMeta.order,
-          moduleMeta.category,
-          module.comment
-        );
-
-        for (let union of module.unions) {
-          await dbPackage.registerModuleUnion(
-            moduleRow.id,
-            union.name,
-            union.comment,
-            union.args,
-            union.cases
-          );
-        }
-
-        for (let alias of module.aliases) {
-          await dbPackage.registerModuleAlias(
-            moduleRow.id,
-            alias.name,
-            alias.comment,
-            alias.args,
-            alias.type
-          );
-        }
-
-        for (let value of module.values) {
-          await dbPackage.registerModuleValue(
-            moduleRow.id,
-            value.name,
-            value.comment,
-            value.type
-          );
-        }
-
-        for (let binop of module.binops) {
-          await dbPackage.registerModuleBinop(
-            moduleRow.id,
-            binop.name,
-            binop.comment,
-            binop.type,
-            binop.associativity,
-            binop.precedence
-          );
-        }
-      }
-
-      await db.run("COMMIT");
-    } catch (err) {
-      await db.run("ROLLBACK");
-      throw err;
-    }
+    buildResult = await build.buildDocs(job, getLocalRepoPath(job), true);
 
     log.info(
       `Successfully compiled package ${job.name} at version ${job.version}`,
       job
     );
-
-    await dbPackageImportJob.advanceJob(
-      job.id,
-      dbPackageImportJob.stepAddToFTS
-    );
   } catch (error) {
-    let compilerError;
-    try {
-      compilerError = JSON.parse(error.stderr);
-    } catch (parseError) {
-      compilerError = error;
-    }
-
     if (compilerError.title === "NO gren.json FILE") {
       log.error("Package doesn't contain gren.json file", compilerError);
       await dbPackageImportJob.scheduleJobForRetry(
@@ -395,7 +265,30 @@ async function buildDocs(job) {
         "Unknown error when compiling project."
       );
     }
+
+    return;
   }
+
+  try {
+    await build.persistToDB(job, buildResult, path);
+  } catch (error) {
+    if (error.message === "VERSION_EXISTS") {
+      await dbPackageImportJob.stopJob(
+        job.id,
+        "This version has already been imported into our system."
+      );
+    } else {
+      await dbPackageImportJob.scheduleJobForRetry(
+        job.id,
+        job.retry,
+        "Unknown error when compiling project."
+      );
+    }
+
+    throw error;
+  }
+
+  await dbPackageImportJob.advanceJob(job.id, dbPackageImportJob.stepAddToFTS);
 }
 
 function prepareExposedModules(exposedModules) {

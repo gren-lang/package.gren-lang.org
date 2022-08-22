@@ -2,7 +2,8 @@ import process from "process";
 
 export const port = process.env["GREN_PORT"] || 3000;
 
-export const canonicalUrl = process.env["GREN_CANONICAL_URL"] || `http://localhost:${port}`;
+export const canonicalUrl =
+  process.env["GREN_CANONICAL_URL"] || `http://localhost:${port}`;
 
 export const dbPath = process.env["GREN_PACKAGES_DATABASE"] || ":memory:";
 
