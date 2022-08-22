@@ -1,8 +1,8 @@
 # Gren Packages
 
-The server hosting [https://packages.gren-lang.org](Gren's packaging site).
+The server hosting [Gren's packaging site](https://packages.gren-lang.org).
 
-Read the [official announcement]() to learn more.
+Read the [official announcement](https://gren-lang.org/news/220822_documentation_as_a_first_class_citizen) to learn more.
 
 ## Preview docs
 
