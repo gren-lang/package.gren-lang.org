@@ -1,6 +1,19 @@
-import { default as pino } from "pino";
+import * as process from "process";
+import { default as winston } from "winston";
 
-const defaultLogger = pino();
+export const defaultLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: {},
+  transports: [
+  ],
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  defaultLogger.add(new winston.transports.Console({
+    format: winston.format.simple(),
+  }));
+}
 
 export function info(msg, data) {
   const logger = data ? defaultLogger.child(data) : defaultLogger;
