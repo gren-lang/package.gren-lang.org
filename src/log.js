@@ -25,6 +25,7 @@ if (process.env.NODE_ENV !== "production") {
       service: "gren_packages",
       ddsource: "nodejs",
       ddtags: "env:pord",
+      intakeRegion: "eu",
     })
   );
 }
