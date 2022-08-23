@@ -22,9 +22,9 @@ if (process.env.NODE_ENV !== "production") {
     new DatadogTransport({
       apiKey: config.datadog.apiKey,
       hostname: config.canonicalUrl,
-      service: "gren_packages",
+      service: "packages",
       ddsource: "nodejs",
-      ddtags: "env:pord",
+      ddtags: "env:prod",
       intakeRegion: "eu",
     })
   );
