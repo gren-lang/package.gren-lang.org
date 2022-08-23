@@ -5,6 +5,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 
 import * as build from "#src/build";
+import * as log from "#src/log";
 
 import "#src/app";
 
@@ -24,6 +25,11 @@ async function execute() {
 
   const buildResult = await build.buildDocs(fakeJob, cwd, false);
   await build.persistToDB(fakeJob, buildResult);
+
+  log.info(
+    `Successfully compiled package ${job.name} at version ${job.version}`,
+    fakeJob
+  );
 }
 
 execute();

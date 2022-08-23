@@ -273,6 +273,11 @@ async function buildDocs(job) {
     await build.persistToDB(job, buildResult, path);
   } catch (error) {
     if (error.message === "VERSION_EXISTS") {
+      log.info(
+        `Package ${job.name} at version ${job.version} already exist in our system`,
+        job
+      );
+
       await dbPackageImportJob.stopJob(
         job.id,
         "This version has already been imported into our system."

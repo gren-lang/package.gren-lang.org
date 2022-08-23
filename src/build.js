@@ -5,7 +5,6 @@ import * as gren from "gren-compiler-library";
 import * as childProcess from "child_process";
 import * as util from "util";
 
-import * as log from "#src/log";
 import * as db from "#src/db";
 
 import * as dbPackage from "#db/package";
@@ -50,11 +49,6 @@ export async function buildDocs(job, localRepoPath, homeOverride) {
 
     const modules = JSON.parse(docsStr);
 
-    log.info(
-      `Successfully compiled package ${job.name} at version ${job.version}`,
-      job
-    );
-
     return {
       readme: readmeStr,
       metadata: metadataObj,
@@ -91,10 +85,6 @@ export async function persistToDB(job, { readme, metadata, modules }) {
     } catch (err) {
       // 19: SQLITE_CONSTRAINT, means row already exists
       if (error.errno === 19) {
-        log.info(
-          `Package ${job.name} at version ${job.version} already exist in our system`,
-          job
-        );
         throw new Error("VERSION_EXISTS");
       } else {
         throw err;

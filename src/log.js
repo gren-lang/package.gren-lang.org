@@ -17,11 +17,22 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export function info(msg, data) {
-  const logger = data ? defaultLogger.child(data) : defaultLogger;
+  const logger = data ? createChildLogger(defaultLogger, data) : defaultLogger;
   logger.info(msg);
 }
 
 export function error(msg, data) {
-  const logger = data ? defaultLogger.child(data) : defaultLogger;
+  const logger = data ? createChildLogger(defaultLogger, data) : defaultLogger;
   logger.error(msg);
+}
+
+function createChildLogger(logger, data) {
+  if (data instanceof Error) {
+    data = {
+      errorMessage: data.message,
+      stacktrace: data.stack,
+    };
+  }
+
+  return logger.child(data);
 }
