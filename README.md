@@ -16,5 +16,5 @@ This preivew'er currently doesn't do auto-reloading, so you'll need to relaunch 
 
 By default, the packaging site will run on port 3000 and the documentation will be stored in an in-memory database. Both of these can be changed using environment variables:
 
-* `GREN_PORT` sets the port the server listen on
-* `GREN_PACKAGES_DATABASE` sets a path where a sqlite database containing the documentation will be stored.
+- `GREN_PORT` sets the port the server listen on
+- `GREN_PACKAGES_DATABASE` sets a path where a sqlite database containing the documentation will be stored.

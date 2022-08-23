@@ -101,9 +101,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
       }
     }
 
-      const exposedModules = prepareExposedModules(
-      metadata["exposed-modules"]
-    );
+    const exposedModules = prepareExposedModules(metadata["exposed-modules"]);
 
     for (let module of modules) {
       const moduleMeta = exposedModules[module.name];

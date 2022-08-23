@@ -12,8 +12,8 @@ import { router as packageRouter } from "#routes/package";
 import * as views from "#src/views";
 import { defaultLogger } from "#src/log";
 
-import * as url from 'url';
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+import * as url from "url";
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 export const api = new Koa();
 
@@ -22,20 +22,13 @@ router.use(rootRouter.routes());
 router.use(importRouter.routes());
 router.use(packageRouter.routes());
 
-
-api.use(logger({
-    reqKeys: [
-        'url',
-        'method',
-        'query'
-    ],
-    resKeys: [
-        'header',
-        'status'
-    ],
-    transports: defaultLogger.transports
-}));
-
+api.use(
+  logger({
+    reqKeys: ["url", "method", "query"],
+    resKeys: ["header", "status"],
+    transports: defaultLogger.transports,
+  })
+);
 
 api.use(
   compress({

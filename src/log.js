@@ -2,17 +2,18 @@ import * as process from "process";
 import { default as winston } from "winston";
 
 export const defaultLogger = winston.createLogger({
-  level: 'info',
+  level: "info",
   format: winston.format.json(),
   defaultMeta: {},
-  transports: [
-  ],
+  transports: [],
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  defaultLogger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+if (process.env.NODE_ENV !== "production") {
+  defaultLogger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    })
+  );
 }
 
 export function info(msg, data) {
