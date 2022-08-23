@@ -241,24 +241,24 @@ async function buildDocs(job) {
       job
     );
   } catch (error) {
-    if (compilerError.title === "NO gren.json FILE") {
-      log.error("Package doesn't contain gren.json file", compilerError);
+    if (error.title === "NO gren.json FILE") {
+      log.error("Package doesn't contain gren.json file", error);
       await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
         "Package doesn't contain gren.json file"
       );
-    } else if (compilerError.title === "GREN VERSION MISMATCH") {
+    } else if (error.title === "GREN VERSION MISMATCH") {
       log.error(
         "Package does not support current Gren compiler",
-        compilerError
+        error
       );
       await dbPackageImportJob.stopJob(
         job.id,
         "Package doesn't support current Gren compiler."
       );
     } else {
-      log.error("Unknown error when compiling project", compilerError);
+      log.error("Unknown error when compiling project", error);
       await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
