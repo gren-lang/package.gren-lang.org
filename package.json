@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@koa/router": "^12.0.0",
+    "datadog-winston": "^1.5.1",
     "ejs": "^3.1.8",
     "gren-compiler-library": "^0.1.0",
     "koa": "^2.13.4",
@@ -48,7 +49,6 @@
     "semver": "^7.3.7",
     "sqlite3": "^5.0.8",
     "winston": "^3.8.1",
-    "winston-datadog": "^1.1.0",
     "xdg-basedir": "^5.1.0",
     "zulip-js": "^2.0.9"
   },

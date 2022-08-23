@@ -1,6 +1,6 @@
 import * as process from "process";
 import { default as winston } from "winston";
-import { default as DatadogTransport } from "winston-datadog";
+import { default as DatadogTransport } from "datadog-winston";
 
 import * as config from "#src/config";
 
@@ -20,8 +20,11 @@ if (process.env.NODE_ENV !== "production") {
 } else {
   defaultLogger.add(
     new DatadogTransport({
-      api_key: config.datadog.apiKey,
-      app_key: config.datadog.appKey,
+      apiKey: config.datadog.apiKey,
+      hostname: config.canonicalUrl,
+      service: "gren_packages",
+      ddsource: "nodejs",
+      ddtags: "env:pord",
     })
   );
 }
