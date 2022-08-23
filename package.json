@@ -45,10 +45,10 @@
     "koa-static": "^5.0.0",
     "koa2-winston": "^3.1.1",
     "markdown-it": "13.0.1",
-    "newrelic": "^9.0.0",
     "semver": "^7.3.7",
     "sqlite3": "^5.0.8",
     "winston": "^3.8.1",
+    "winston-datadog": "^1.1.0",
     "xdg-basedir": "^5.1.0",
     "zulip-js": "^2.0.9"
   },

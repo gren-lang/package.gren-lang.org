@@ -1,5 +1,8 @@
 import * as process from "process";
 import { default as winston } from "winston";
+import { default as DatadogTransport } from "winston-datadog";
+
+import * as config from "#src/config";
 
 export const defaultLogger = winston.createLogger({
   level: "info",
@@ -12,6 +15,13 @@ if (process.env.NODE_ENV !== "production") {
   defaultLogger.add(
     new winston.transports.Console({
       format: winston.format.simple(),
+    })
+  );
+} else {
+  defaultLogger.add(
+    new DatadogTransport({
+      api_key: config.datadog.apiKey,
+      app_key: config.datadog.appKey,
     })
   );
 }

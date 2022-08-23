@@ -249,10 +249,7 @@ async function buildDocs(job) {
         "Package doesn't contain gren.json file"
       );
     } else if (error.title === "GREN VERSION MISMATCH") {
-      log.error(
-        "Package does not support current Gren compiler",
-        error
-      );
+      log.error("Package does not support current Gren compiler", error);
       await dbPackageImportJob.stopJob(
         job.id,
         "Package doesn't support current Gren compiler."

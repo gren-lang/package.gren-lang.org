@@ -7,6 +7,11 @@ export const canonicalUrl =
 
 export const dbPath = process.env["GREN_PACKAGES_DATABASE"] || ":memory:";
 
+export const datadog = {
+  apiKey: process.env["DATADOG_API_KEY"],
+  appKey: process.env["DATADOG_APP_KEY"],
+};
+
 export const zulip = {
   username: process.env["GREN_ZULIP_USERNAME"],
   apiKey: process.env["GREN_ZULIP_APIKEY"],

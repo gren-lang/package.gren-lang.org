@@ -11,8 +11,6 @@ processes = []
 
 [env]
   NODE_ENV = "production"
-  NEW_RELIC_APP_NAME = "gren-packages"
-  NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED = "true"
   GREN_PORT = "8080"
   GREN_CANONICAL_URL = "https://packages.gren-lang.org"
   GREN_PACKAGES_DATABASE = "/data/db.sqlite"
