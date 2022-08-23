@@ -23,7 +23,19 @@ router.use(importRouter.routes());
 router.use(packageRouter.routes());
 
 
-api.use(logger( { logger: defaultLogger }));
+api.use(logger({
+    reqKeys: [
+        'url',
+        'method',
+        'query'
+    ],
+    resKeys: [
+        'header',
+        'status'
+    ],
+    transports: defaultLogger.transports
+}));
+
 
 api.use(
   compress({
