@@ -14,8 +14,18 @@ router.get("/", async (ctx, next) => {
   views.render(ctx, {
     html: () => views.root({ corePackages, recentlyUpdated }),
     json: () => {
-      return { error: "Use HTML" };
+      return { recentlyUpdated };
     },
     text: () => "Use HTML",
+  });
+});
+
+router.get("/health", async (ctx, next) => {
+  views.render(ctx, {
+    html: () => "OK",
+    json: () => {
+      return { health: "OK" };
+    },
+    text: () => "OK",
   });
 });
