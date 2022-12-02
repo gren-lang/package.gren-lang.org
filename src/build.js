@@ -2,68 +2,42 @@ import * as process from "process";
 import * as path from "path";
 import * as fs from "fs/promises";
 import * as gren from "gren-compiler-library";
-import * as childProcess from "child_process";
-import * as util from "util";
 
 import * as db from "#src/db";
 
 import * as dbPackage from "#db/package";
 
-const execFile = util.promisify(childProcess.execFile);
-
 export async function buildDocs(job, localRepoPath, homeOverride) {
-  try {
-    await gren.downloadCompiler();
-    const compilerPath = gren.compilerPath;
-    const compilerArgs = ["make", "--docs=./docs.json", "--report=json"];
+  await gren.downloadCompiler();
 
-    const env = !homeOverride
-      ? process.env
-      : {
-          ...process.env,
-          GREN_HOME: path.join(localRepoPath, ".gren", "home"),
-        };
+  const env = !homeOverride
+    ? process.env
+    : {
+        ...process.env,
+        GREN_HOME: path.join(localRepoPath, ".gren", "home"),
+      };
 
-    await execFile(compilerPath, compilerArgs, {
-      cwd: localRepoPath,
-      env: env,
-      timeout: 30_000,
-    });
+  const modules = await gren.compileDocs(localRepoPath, {
+    cwd: localRepoPath,
+    env: env,
+    timeout: 30_000,
+  });
 
-    const metadataStr = await fs.readFile(
-      path.join(localRepoPath, "gren.json"),
-      {
-        encoding: "utf-8",
-      }
-    );
+  const metadataStr = await fs.readFile(path.join(localRepoPath, "gren.json"), {
+    encoding: "utf-8",
+  });
 
-    const readmeStr = await fs.readFile(path.join(localRepoPath, "README.md"), {
-      encoding: "utf-8",
-    });
+  const metadataObj = JSON.parse(metadataStr);
 
-    const docsStr = await fs.readFile(path.join(localRepoPath, "docs.json"), {
-      encoding: "utf-8",
-    });
+  const readmeStr = await fs.readFile(path.join(localRepoPath, "README.md"), {
+    encoding: "utf-8",
+  });
 
-    const metadataObj = JSON.parse(metadataStr);
-
-    const modules = JSON.parse(docsStr);
-
-    return {
-      readme: readmeStr,
-      metadata: metadataObj,
-      modules: modules,
-    };
-  } catch (error) {
-    let compilerError;
-    try {
-      compilerError = JSON.parse(error.stderr);
-    } catch (parseError) {
-      compilerError = error;
-    }
-
-    throw compilerError;
-  }
+  return {
+    readme: readmeStr,
+    metadata: metadataObj,
+    modules: modules,
+  };
 }
 
 export async function persistToDB(job, { readme, metadata, modules }) {
@@ -93,8 +67,10 @@ export async function persistToDB(job, { readme, metadata, modules }) {
 
     const exposedModules = prepareExposedModules(metadata["exposed-modules"]);
 
-    for (let module of modules) {
-      const moduleMeta = exposedModules[module.name];
+    for (let moduleName in modules) {
+      const module = modules[moduleName];
+      const moduleMeta = exposedModules[moduleName];
+
       const moduleRow = await dbPackage.registerModule(
         versioned.id,
         module.name,
