@@ -1,7 +1,7 @@
 {
   "name": "gren-packages",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "The server powering package.gren-lang.org",
   "keywords": [
     "gren",
@@ -33,7 +33,7 @@
   },
   "homepage": "https://packages.gren-lang.org",
   "engines": {
-    "node": "16.*"
+    "node": "18.*"
   },
   "dependencies": {
     "@koa/router": "^12.0.0",
@@ -46,13 +46,13 @@
     "koa-static": "^5.0.0",
     "koa2-winston": "^3.1.1",
     "markdown-it": "13.0.1",
-    "semver": "^7.3.7",
-    "sqlite3": "^5.0.8",
-    "winston": "^3.8.1",
+    "semver": "^7.3.8",
+    "sqlite3": "^5.1.2",
+    "winston": "^3.8.2",
     "xdg-basedir": "^5.1.0",
     "zulip-js": "^2.0.9"
   },
   "devDependencies": {
-    "prettier": "2.7.1"
+    "prettier": "2.8.0"
   }
 }
