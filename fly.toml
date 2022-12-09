@@ -4,7 +4,7 @@ kill_timeout = 10
 processes = []
 
 [build]
-  dockerfile = "Dockerfile.test"
+  dockerfile = "Dockerfile"
 
 [env]
   NODE_ENV = "production"
