@@ -4,10 +4,7 @@ kill_timeout = 10
 processes = []
 
 [build]
-  builder = "heroku/buildpacks:20"
-  [build.args]
-  NODE_ENV = "production"
-
+  dockerfile = "Dockerfile.test"
 
 [env]
   NODE_ENV = "production"
