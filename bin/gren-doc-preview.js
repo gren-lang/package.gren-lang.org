@@ -27,7 +27,7 @@ async function execute() {
   await build.persistToDB(fakeJob, buildResult);
 
   log.info(
-    `Successfully compiled package ${job.name} at version ${job.version}`,
+    `Successfully compiled package ${fakeJob.name} at version ${fakeJob.version}`,
     fakeJob
   );
 }
