@@ -26,10 +26,7 @@ async function execute() {
   const buildResult = await build.buildDocs(fakeJob, cwd, false);
   await build.persistToDB(fakeJob, buildResult);
 
-  log.info(
-    `Successfully compiled package ${fakeJob.name} at version ${fakeJob.version}`,
-    fakeJob
-  );
+  log.info(`Successfully compiled package ${name} at version ${version}`);
 }
 
 execute();
