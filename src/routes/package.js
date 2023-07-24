@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { default as semver } from "semver";
+import pikchrPkg from "markdown-it-pikchr";
 import { default as MarkdownIt } from "markdown-it";
 
 import * as views from "#src/views";
@@ -10,7 +10,7 @@ export const router = new Router({
   prefix: "/package",
 });
 
-const markdown = new MarkdownIt();
+const markdown = new MarkdownIt().use(pikchrPkg.default);
 
 router.get("search", "/search", async (ctx, next) => {
   const query = ctx.request.query.query;
