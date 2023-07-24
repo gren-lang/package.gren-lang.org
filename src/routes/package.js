@@ -30,6 +30,7 @@ router.get("package-redirect", "/:author/:project", async (ctx, next) => {
 
   if (latestVersion == null) {
     ctx.status = 404;
+    await next();
     return;
   }
 
@@ -57,6 +58,7 @@ router.get(
 
     if (versions.length === 0) {
       ctx.status = 404;
+      await next();
       return;
     }
 
@@ -203,6 +205,7 @@ async function moduleOverview(ctx, next) {
   );
   if (moduleInfo == null) {
     ctx.status = 404;
+    await next();
     return;
   }
 
@@ -256,6 +259,7 @@ async function packageOverview(ctx, next) {
 
   if (readme == null) {
     ctx.status = 404;
+    await next();
     return;
   }
 
