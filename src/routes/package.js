@@ -85,58 +85,13 @@ router.get(
 router.get(
   "package-overview",
   "/:author/:project/version/:version/overview",
-  async (ctx, next) => {
-    const author = ctx.params.author;
-    const project = ctx.params.project;
-    const packageName = packageNameFromCtx(ctx);
-    const version = ctx.params.version;
+  packageOverview
+);
 
-    const readme = await dbPackage.getReadme(packageName, version);
-
-    if (readme == null) {
-      ctx.status = 404;
-      return;
-    }
-
-    const renderedMarkdown = markdown.render(readme);
-
-    const modules = await dbPackage.getModuleList(packageName, version);
-    const exposedModules = prepareExposedModulesView(
-      author,
-      project,
-      version,
-      modules
-    );
-
-    views.render(ctx, {
-      html: () =>
-        views.packageOverview({
-          packageName: packageName,
-          packageNameShort: packageName.split("/")[1],
-          packageVersion: version,
-          packageOverviewLink: router.url("package-overview", {
-            author: author,
-            project: project,
-            version: version,
-          }),
-          packageVersionsLink: router.url("package-versions", {
-            author: author,
-            project: project,
-          }),
-          packageSourceLink: githubUrl(packageName, version),
-          readme: renderedMarkdown,
-          exposedModules: exposedModules,
-        }),
-      json: () => {
-        return {
-          name: packageName,
-          version: version,
-          readme: readme,
-        };
-      },
-      text: () => readme,
-    });
-  }
+router.get(
+  "latest-package-overview",
+  "/:author/:project/latest/overview",
+  packageOverview
 );
 
 function prepareExposedModulesView(author, project, version, modules) {
@@ -171,58 +126,13 @@ function prepareModuleForView(author, project, version, moduleName) {
 router.get(
   "package-module",
   "/:author/:project/version/:version/module/:module",
-  async (ctx, next) => {
-    const { author, project } = ctx.params;
-    const packageName = packageNameFromCtx(ctx);
-    const version = ctx.params.version;
-    const moduleName = ctx.params.module;
+  moduleOverview
+);
 
-    const moduleInfo = await dbPackage.getModuleComment(
-      packageName,
-      version,
-      moduleName
-    );
-    if (moduleInfo == null) {
-      ctx.status = 404;
-      return;
-    }
-
-    const moduleDocumentation = await prepareModuleDocumentation(moduleInfo);
-
-    const modules = await dbPackage.getModuleList(packageName, version);
-    const exposedModules = prepareExposedModulesView(
-      author,
-      project,
-      version,
-      modules
-    );
-
-    views.render(ctx, {
-      html: () =>
-        views.packageModule({
-          packageName: packageName,
-          packageNameShort: packageName.split("/")[1],
-          packageVersion: version,
-          packageOverviewLink: router.url("package-overview", {
-            author: author,
-            project: project,
-            version: version,
-          }),
-          packageVersionsLink: router.url("package-versions", {
-            author: author,
-            project: project,
-          }),
-          packageSourceLink: githubUrl(packageName, version),
-          moduleName: moduleName,
-          moduleDocs: moduleDocumentation,
-          exposedModules: exposedModules,
-        }),
-      json: () => {
-        return moduleInfo;
-      },
-      text: () => moduleDocumentation,
-    });
-  }
+router.get(
+  "latest-package-module",
+  "/:author/:project/latest/module/:module",
+  moduleOverview
 );
 
 function githubUrl(packageName, version) {
@@ -275,6 +185,118 @@ async function prepareModuleDocumentation(moduleInfo) {
     });
 
   return [intro].concat(parts);
+}
+
+async function moduleOverview(ctx, next) {
+  const { author, project } = ctx.params;
+  const packageName = packageNameFromCtx(ctx);
+  let version = ctx.params.version;
+  if (!version) {
+    version = await dbPackage.latestVersion(packageName);
+  }
+  const moduleName = ctx.params.module;
+
+  const moduleInfo = await dbPackage.getModuleComment(
+    packageName,
+    version,
+    moduleName
+  );
+  if (moduleInfo == null) {
+    ctx.status = 404;
+    return;
+  }
+
+  const moduleDocumentation = await prepareModuleDocumentation(moduleInfo);
+
+  const modules = await dbPackage.getModuleList(packageName, version);
+  const exposedModules = prepareExposedModulesView(
+    author,
+    project,
+    version,
+    modules
+  );
+
+  views.render(ctx, {
+    html: () =>
+      views.packageModule({
+        packageName: packageName,
+        packageNameShort: packageName.split("/")[1],
+        packageVersion: version,
+        packageOverviewLink: router.url("package-overview", {
+          author: author,
+          project: project,
+          version: version,
+        }),
+        packageVersionsLink: router.url("package-versions", {
+          author: author,
+          project: project,
+        }),
+        packageSourceLink: githubUrl(packageName, version),
+        moduleName: moduleName,
+        moduleDocs: moduleDocumentation,
+        exposedModules: exposedModules,
+      }),
+    json: () => {
+      return moduleInfo;
+    },
+    text: () => moduleDocumentation,
+  });
+}
+
+async function packageOverview(ctx, next) {
+  const author = ctx.params.author;
+  const project = ctx.params.project;
+  const packageName = packageNameFromCtx(ctx);
+  let version = ctx.params.version;
+  if (!version) {
+    version = await dbPackage.latestVersion(packageName);
+  }
+
+  const readme = await dbPackage.getReadme(packageName, version);
+
+  if (readme == null) {
+    ctx.status = 404;
+    return;
+  }
+
+  const renderedMarkdown = markdown.render(readme);
+
+  const modules = await dbPackage.getModuleList(packageName, version);
+  const exposedModules = prepareExposedModulesView(
+    author,
+    project,
+    version,
+    modules
+  );
+
+  views.render(ctx, {
+    html: () =>
+      views.packageOverview({
+        packageName: packageName,
+        packageNameShort: packageName.split("/")[1],
+        packageVersion: version,
+        packageOverviewLink: router.url("package-overview", {
+          author: author,
+          project: project,
+          version: version,
+        }),
+        packageVersionsLink: router.url("package-versions", {
+          author: author,
+          project: project,
+        }),
+        packageSourceLink: githubUrl(packageName, version),
+        readme: renderedMarkdown,
+        exposedModules: exposedModules,
+      }),
+    json: () => {
+      return {
+        name: packageName,
+        version: version,
+        readme: readme,
+      };
+    },
+    text: () => readme,
+  });
 }
 
 function Markdown(txt) {
