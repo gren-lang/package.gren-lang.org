@@ -553,7 +553,7 @@ LEFT JOIN package_version v2
     ON v1.package_id = v2.package_id
     AND v1.version < v2.version
 WHERE v2.package_id IS NULL
-    AND package.name LIKE 'gren-lang/%'
+    AND (package.name = 'gren-lang/core' OR package.name = 'gren-lang/browser' OR package.name = 'gren-lang/node')
 ORDER BY package.name;
 `,
     {}
