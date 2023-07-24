@@ -4,9 +4,9 @@
         <button type="submit">Search</button>
     </form>
 
-    <h2>Core packages</h2>
+    <h3>Core packages</h3>
     <%- include('/package_list.ejs', { packages: corePackages }) -%>
 
-    <h2>Recently updated</h2>
+    <h3>Recently updated</h3>
     <%- include('/package_list.ejs', { packages: recentlyUpdated }) -%>
 <%- include('/footer.ejs') -%>
