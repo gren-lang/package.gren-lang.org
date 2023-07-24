@@ -14,7 +14,7 @@
     </ul>
 
     <%_ for (let [group, modules] of Object.entries(exposedModules)) { -%>
-    <h3><%= group === '' ? 'Modules' : group -%></h3>
+    <h4><%= group === '' ? 'Modules' : group -%></h4>
 
     <ul>
         <%_ modules.forEach(function(module) { -%>

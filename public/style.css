@@ -61,7 +61,7 @@ pre {
 }
 
 .container {
-  max-width: 80rem;
+  max-width: 92rem;
 }
 
 main > header {
@@ -128,7 +128,7 @@ main > .content ul.package-list > li > .package-version {
 
 main > .content > #module-docs {
   display: inline-block;
-  max-width: 55rem;
+  max-width: 65rem;
 }
 
 main > .content > #module-docs h1 {
@@ -163,9 +163,9 @@ main > .content > #module-docs > .block .comment p {
 
 main > .content > #package-links {
   display: inline-block;
-  max-width: 20rem;
+  max-width: 24rem;
   vertical-align: top;
-  padding-left: 4rem;
+  padding-left: 3rem;
 }
 
 main > .content > #package-links h3 > small {
@@ -173,11 +173,15 @@ main > .content > #package-links h3 > small {
   margin-left: 0.25rem;
 }
 
+main > .content > #package-links h4 {
+  margin-bottom: 1rem;
+}
+
 main > .content > #package-links ul {
   list-style: none;
 }
 
-@media only screen and (max-width: 50rem) {
+@media only screen and (max-width: 60rem) {
   main > .content > #module-docs {
     display: block;
     max-width: 100%;
