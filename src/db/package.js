@@ -365,7 +365,7 @@ LIMIT 1
     }
   );
 
-  return row.version;
+  return row?.version;
 }
 
 export async function getSummary(name, version) {
@@ -404,7 +404,7 @@ LIMIT 1
     }
   );
 
-  return row.readme;
+  return row?.readme;
 }
 
 export function getModuleList(packageName, version) {

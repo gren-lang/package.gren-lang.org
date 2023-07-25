@@ -55,7 +55,7 @@ api.use(router.allowedMethods());
 api.use(async (ctx, next) => {
   await next();
 
-  if ((ctx.status = 404)) {
+  if (ctx.status == 404) {
     views.render(ctx, {
       html: views.notFound,
       json: () => {
