@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== "production") {
   defaultLogger.add(
     new winston.transports.Console({
       format: winston.format.simple(),
-    })
+    }),
   );
 } else {
   defaultLogger.add(
@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== "production") {
       ddsource: "nodejs",
       ddtags: "env:prod",
       intakeRegion: "eu",
-    })
+    }),
   );
 }
 

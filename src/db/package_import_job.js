@@ -27,7 +27,7 @@ export function getAllJobs() {
     `
 SELECT * FROM package_import_job
 `,
-    {}
+    {},
   );
 }
 
@@ -41,7 +41,7 @@ AND process_after_epoch < unixepoch('now')
 ORDER BY process_after_epoch
 LIMIT 1
 `,
-    {}
+    {},
   );
 }
 
@@ -79,7 +79,7 @@ INSERT INTO package_import_job (
       $url: url,
       $version: version,
       $step: step,
-    }
+    },
   );
 }
 
@@ -106,7 +106,7 @@ WHERE
       $id: id,
       $reason: `${reason}, will retry`,
       $nextTimeIncrease: nextTimeIncrease,
-    }
+    },
   );
 }
 
@@ -120,7 +120,7 @@ WHERE id = $id
     {
       $id: id,
       $message: msg,
-    }
+    },
   );
 }
 
@@ -139,7 +139,7 @@ WHERE
     {
       $id: id,
       $nextStep: nextStep,
-    }
+    },
   );
 }
 
@@ -157,7 +157,7 @@ WHERE
     {
       $id: id,
       $reason: reason,
-    }
+    },
   );
 }
 
@@ -171,7 +171,7 @@ FROM package_import_job
 WHERE in_progress = FALSE
 AND process_after_epoch < unixepoch('now') - 60
 `,
-    {}
+    {},
   );
 
   for (let job of jobs) {
@@ -181,7 +181,7 @@ AND process_after_epoch < unixepoch('now') - 60
 DELETE FROM package_import_job
 WHERE id = $id
 `,
-      { $id: job.id }
+      { $id: job.id },
     );
   }
 

@@ -40,7 +40,7 @@ router.get("package-redirect", "/:author/:project", async (ctx, next) => {
       author: author,
       project: project,
       version: latestVersion,
-    })
+    }),
   );
 });
 
@@ -81,19 +81,19 @@ router.get(
       json: () => versions,
       text: () => versions.join("\n"),
     });
-  }
+  },
 );
 
 router.get(
   "package-overview",
   "/:author/:project/version/:version/overview",
-  packageOverview
+  packageOverview,
 );
 
 router.get(
   "latest-package-overview",
   "/:author/:project/latest/overview",
-  packageOverview
+  packageOverview,
 );
 
 function prepareExposedModulesView(author, project, version, modules) {
@@ -104,7 +104,7 @@ function prepareExposedModulesView(author, project, version, modules) {
     const existingCategoryValues = exposedModules[category] || [];
 
     existingCategoryValues.push(
-      prepareModuleForView(author, project, version, module.name)
+      prepareModuleForView(author, project, version, module.name),
     );
 
     exposedModules[category] = existingCategoryValues;
@@ -128,13 +128,13 @@ function prepareModuleForView(author, project, version, moduleName) {
 router.get(
   "package-module",
   "/:author/:project/version/:version/module/:module",
-  moduleOverview
+  moduleOverview,
 );
 
 router.get(
   "latest-package-module",
   "/:author/:project/latest/module/:module",
-  moduleOverview
+  moduleOverview,
 );
 
 function githubUrl(packageName, version) {
@@ -180,7 +180,7 @@ async function prepareModuleDocumentation(moduleInfo) {
       const moreMarkdown = new Markdown(
         [firstChunk.trimLeft().slice(firstWord.length)]
           .concat(remainingChunks)
-          .join(",")
+          .join(","),
       );
 
       return [part, moreMarkdown];
@@ -201,7 +201,7 @@ async function moduleOverview(ctx, next) {
   const moduleInfo = await dbPackage.getModuleComment(
     packageName,
     version,
-    moduleName
+    moduleName,
   );
   if (moduleInfo == null) {
     ctx.status = 404;
@@ -216,7 +216,7 @@ async function moduleOverview(ctx, next) {
     author,
     project,
     version,
-    modules
+    modules,
   );
 
   views.render(ctx, {
@@ -270,7 +270,7 @@ async function packageOverview(ctx, next) {
     author,
     project,
     version,
-    modules
+    modules,
   );
 
   views.render(ctx, {
@@ -328,7 +328,7 @@ function Union(name, comment, args, cases) {
 
 function formatCases(cases) {
   return cases.map((c) =>
-    [c[0], stripModulesFromTypes(c[1].join(" "))].join(" ")
+    [c[0], stripModulesFromTypes(c[1].join(" "))].join(" "),
   );
 }
 

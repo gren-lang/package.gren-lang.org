@@ -27,13 +27,13 @@ api.use(
     reqKeys: ["url", "method", "query"],
     resKeys: ["header", "status"],
     transports: defaultLogger.transports,
-  })
+  }),
 );
 
 api.use(
   compress({
     threshold: 2048,
-  })
+  }),
 );
 
 api.use(rateLimit);
@@ -44,7 +44,7 @@ api.use(
     index: null,
     gzip: false,
     brotli: false,
-  })
+  }),
 );
 
 api.use(bodyParser());

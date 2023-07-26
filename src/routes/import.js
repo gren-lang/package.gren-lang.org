@@ -56,7 +56,7 @@ router.post("init-job", "/init", async (ctx, next) => {
       packageName,
       githubUrl,
       "*",
-      dbPackageImportJob.stepFindMissingVersions
+      dbPackageImportJob.stepFindMissingVersions,
     );
 
     log.info(`Begin import of ${packageName}`);
@@ -142,7 +142,7 @@ async function findMissingVersions(job) {
 
     log.info(
       `Registering jobs for importing new versions of ${job.name}`,
-      entries
+      entries,
     );
 
     for (let tag of entries) {
@@ -151,7 +151,7 @@ async function findMissingVersions(job) {
           job.name,
           job.url,
           tag,
-          dbPackageImportJob.stepCloneRepo
+          dbPackageImportJob.stepCloneRepo,
         );
       } catch (error) {
         // 19: SQLITE_CONSTRAINT, means row already exists
@@ -160,7 +160,7 @@ async function findMissingVersions(job) {
         } else {
           log.error(
             `Unknown error when trying to register import job for ${job.name} version ${tag}.`,
-            error
+            error,
           );
         }
       }
@@ -171,14 +171,14 @@ async function findMissingVersions(job) {
     if (error.code === 128) {
       await dbPackageImportJob.stopJob(
         job.id,
-        `Repository doesn\'t exist: ${job.url}`
+        `Repository doesn\'t exist: ${job.url}`,
       );
     } else {
       log.error("Unknown error when finding tags for remote git repo", error);
       await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
-        "Unknown error when finding tags for git repo."
+        "Unknown error when finding tags for git repo.",
       );
     }
   }
@@ -204,24 +204,24 @@ async function cloneRepo(job) {
       ],
       {
         timeout: 10_000,
-      }
+      },
     );
 
     log.info(
       `Successfully cloned repo for package ${job.name} at version ${job.version}`,
-      job
+      job,
     );
 
     await dbPackageImportJob.advanceJob(
       job.id,
-      dbPackageImportJob.stepBuildDocs
+      dbPackageImportJob.stepBuildDocs,
     );
   } catch (error) {
     log.error("Unknown error when cloning remote git repo", error);
     await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
-      "Unknown error when cloning git repo."
+      "Unknown error when cloning git repo.",
     );
   }
 }
@@ -238,7 +238,7 @@ async function buildDocs(job) {
 
     log.info(
       `Successfully compiled package ${job.name} at version ${job.version}`,
-      job
+      job,
     );
   } catch (error) {
     if (error.title === "NO gren.json FILE") {
@@ -246,20 +246,20 @@ async function buildDocs(job) {
       await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
-        "Package doesn't contain gren.json file"
+        "Package doesn't contain gren.json file",
       );
     } else if (error.title === "GREN VERSION MISMATCH") {
       log.error("Package does not support current Gren compiler", error);
       await dbPackageImportJob.stopJob(
         job.id,
-        "Package doesn't support current Gren compiler."
+        "Package doesn't support current Gren compiler.",
       );
     } else {
       log.error("Unknown error when compiling project", error);
       await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
-        "Unknown error when compiling project."
+        "Unknown error when compiling project.",
       );
     }
 
@@ -272,18 +272,18 @@ async function buildDocs(job) {
     if (error.message === "VERSION_EXISTS") {
       log.info(
         `Package ${job.name} at version ${job.version} already exist in our system`,
-        job
+        job,
       );
 
       await dbPackageImportJob.stopJob(
         job.id,
-        "This version has already been imported into our system."
+        "This version has already been imported into our system.",
       );
     } else {
       await dbPackageImportJob.scheduleJobForRetry(
         job.id,
         job.retry,
-        "Unknown error when compiling project."
+        "Unknown error when compiling project.",
       );
     }
 
@@ -300,22 +300,22 @@ async function addToFTS(job) {
     await dbPackage.registerForSearch(job.name, job.version, summary);
 
     log.info(
-      `Successfully added ${job.name} version ${job.version} to FTS table`
+      `Successfully added ${job.name} version ${job.version} to FTS table`,
     );
 
     await dbPackageImportJob.advanceJob(
       job.id,
-      dbPackageImportJob.stepNotifyZulip
+      dbPackageImportJob.stepNotifyZulip,
     );
   } catch (error) {
     log.error(
       "Unknown error when registering package for full text search",
-      error
+      error,
     );
     await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
-      "Unknown error when registering package for full text search"
+      "Unknown error when registering package for full text search",
     );
   }
 }
@@ -327,12 +327,12 @@ async function notifyZulip(job) {
     const resp = await zulip.sendNewPackageNotification(
       job.name,
       job.version,
-      summary
+      summary,
     );
 
     log.info(
       `Response from Zulip for ${job.name} version ${job.version}`,
-      resp
+      resp,
     );
 
     await dbPackageImportJob.stopJob(job.id, "Done");
@@ -341,7 +341,7 @@ async function notifyZulip(job) {
     await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
-      "Unknown error when notifying zulip"
+      "Unknown error when notifying zulip",
     );
   }
 }

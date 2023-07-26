@@ -4,7 +4,7 @@ import * as ejs from "ejs";
 
 const viewRootDir = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
-  "view"
+  "view",
 );
 
 function compileTemplate(filename) {

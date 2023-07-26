@@ -27,7 +27,7 @@ PRAGMA foreign_keys = on;
 
     const migrations = [].concat(
       dbPackageImportJob.migrations,
-      dbPackage.migrations
+      dbPackage.migrations,
     );
 
     for (let migration of migrations) {

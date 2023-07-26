@@ -54,7 +54,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
         metadata.license,
         metadata["gren-version"],
         metadata.summary,
-        readme
+        readme,
       );
     } catch (err) {
       // 19: SQLITE_CONSTRAINT, means row already exists
@@ -76,7 +76,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
         module.name,
         moduleMeta.order,
         moduleMeta.category,
-        module.comment
+        module.comment,
       );
 
       for (let union of module.unions) {
@@ -85,7 +85,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
           union.name,
           union.comment,
           union.args,
-          union.cases
+          union.cases,
         );
       }
 
@@ -95,7 +95,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
           alias.name,
           alias.comment,
           alias.args,
-          alias.type
+          alias.type,
         );
       }
 
@@ -104,7 +104,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
           moduleRow.id,
           value.name,
           value.comment,
-          value.type
+          value.type,
         );
       }
 
@@ -115,7 +115,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
           binop.comment,
           binop.type,
           binop.associativity,
-          binop.precedence
+          binop.precedence,
         );
       }
     }

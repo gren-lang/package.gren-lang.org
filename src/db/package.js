@@ -101,7 +101,7 @@ RETURNING *
     {
       $name: name,
       $url: url,
-    }
+    },
   );
 }
 
@@ -114,7 +114,7 @@ ON CONFLICT (text) DO UPDATE
 SET text = $value
 RETURNING id
 `,
-    { $value: value }
+    { $value: value },
   );
 }
 
@@ -124,7 +124,7 @@ export async function registerVersion(
   license,
   grenVersionRange,
   summary,
-  readme
+  readme,
 ) {
   const parsedVersion = new semver.SemVer(version);
   const readmeRow = await internString(readme.trim());
@@ -162,7 +162,7 @@ RETURNING *
       $grenVersionRange: grenVersionRange,
       $summary: summary,
       $readmeId: readmeRow.id,
-    }
+    },
   );
 }
 
@@ -171,7 +171,7 @@ export async function registerModule(
   name,
   order,
   category,
-  comment
+  comment,
 ) {
   const commentRow = await internString(comment.trim());
   return db.queryOne(
@@ -197,7 +197,7 @@ RETURNING *
       $order: order,
       $category: category,
       $commentId: commentRow.id,
-    }
+    },
   );
 }
 
@@ -206,7 +206,7 @@ export async function registerModuleUnion(
   name,
   comment,
   args,
-  cases
+  cases,
 ) {
   const trimmedComment = comment.trim();
   const commentRow =
@@ -233,7 +233,7 @@ INSERT INTO package_module_union (
       $commentId: commentRow ? commentRow.id : null,
       $args: args.join(","),
       $cases: JSON.stringify(cases),
-    }
+    },
   );
 }
 
@@ -263,7 +263,7 @@ INSERT INTO package_module_alias (
       $commentId: commentRow ? commentRow.id : null,
       $type: type,
       $args: args.join(","),
-    }
+    },
   );
 }
 
@@ -290,7 +290,7 @@ INSERT INTO package_module_value (
       $name: name,
       $commentId: commentRow ? commentRow.id : null,
       $type: type,
-    }
+    },
   );
 }
 
@@ -300,7 +300,7 @@ export async function registerModuleBinop(
   comment,
   type,
   associativity,
-  precedence
+  precedence,
 ) {
   const trimmedComment = comment.trim();
   const commentRow =
@@ -330,7 +330,7 @@ INSERT INTO package_module_binop (
       $type: type,
       $associativity: associativity,
       $precedence: precedence,
-    }
+    },
   );
 }
 
@@ -344,7 +344,7 @@ WHERE package.name = $name
 `,
     {
       $name: name,
-    }
+    },
   );
 
   return rows.map((row) => row.version);
@@ -362,7 +362,7 @@ LIMIT 1
 `,
     {
       $name: name,
-    }
+    },
   );
 
   return row?.version;
@@ -381,7 +381,7 @@ LIMIT 1
     {
       $name: name,
       $version: version,
-    }
+    },
   );
 
   return row.summary;
@@ -401,7 +401,7 @@ LIMIT 1
     {
       $name: name,
       $version: version,
-    }
+    },
   );
 
   return row?.readme;
@@ -421,7 +421,7 @@ ORDER BY sort_order
     {
       $packageName: packageName,
       $version: version,
-    }
+    },
   );
 }
 
@@ -443,7 +443,7 @@ LIMIT 1
       $packageName: packageName,
       $version: version,
       $moduleName: moduleName,
-    }
+    },
   );
 }
 
@@ -457,7 +457,7 @@ WHERE module_id = $moduleId
 `,
     {
       $moduleId: moduleId,
-    }
+    },
   );
 
   const result = {};
@@ -479,7 +479,7 @@ WHERE module_id = $moduleId
 `,
     {
       $moduleId: moduleId,
-    }
+    },
   );
 
   const result = {};
@@ -504,7 +504,7 @@ WHERE module_id = $moduleId
 `,
     {
       $moduleId: moduleId,
-    }
+    },
   );
 
   const result = {};
@@ -531,7 +531,7 @@ WHERE module_id = $moduleId
 `,
     {
       $moduleId: moduleId,
-    }
+    },
   );
 
   const result = {};
@@ -556,7 +556,7 @@ WHERE v2.package_id IS NULL
     AND (package.name = 'gren-lang/core' OR package.name = 'gren-lang/browser' OR package.name = 'gren-lang/node')
 ORDER BY package.name;
 `,
-    {}
+    {},
   );
 }
 
@@ -573,7 +573,7 @@ WHERE v2.package_id IS NULL
 ORDER BY v1.imported_epoch DESC
 LIMIT 10;
 `,
-    {}
+    {},
   );
 }
 
@@ -599,7 +599,7 @@ LIMIT 1
 `,
     {
       $name: name,
-    }
+    },
   );
 }
 
@@ -613,7 +613,7 @@ VALUES ($name, $version, $summary)
       $name: name,
       $version: version,
       $summary: summary,
-    }
+    },
   );
 }
 
@@ -630,7 +630,7 @@ WHERE rowid = $rowid
       $rowid: rowid,
       $version: version,
       $summary: summary,
-    }
+    },
   );
 }
 
@@ -644,6 +644,6 @@ LIMIT 25
 `,
     {
       $query: `"${query}"`,
-    }
+    },
   );
 }
