@@ -1,53 +1,50 @@
 app = "gren-packages"
+primary_region = "lhr"
 kill_signal = "SIGINT"
-kill_timeout = 10
-processes = []
+kill_timeout = "10s"
+
+[experimental]
+  auto_rollback = true
 
 [build]
   dockerfile = "Dockerfile"
 
 [env]
-  NODE_ENV = "production"
-  GREN_PORT = "8080"
   GREN_CANONICAL_URL = "https://packages.gren-lang.org"
   GREN_PACKAGES_DATABASE = "/data/db.sqlite"
-  GREN_ZULIP_USERNAME = "packages-bot@gren.zulipchat.com"
+  GREN_PORT = "8080"
   GREN_ZULIP_REALM = "https://gren.zulipchat.com"
+  GREN_ZULIP_USERNAME = "packages-bot@gren.zulipchat.com"
+  NODE_ENV = "production"
 
-[experimental]
-  allowed_public_ports = []
-  auto_rollback = true
-
-[mounts]
+[[mounts]]
   source = "gren_packages_data"
   destination = "/data"
+  processes = ["app"]
 
 [[services]]
-  http_checks = []
+  protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
-  protocol = "tcp"
-  script_checks = []
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
   [services.concurrency]
+    type = "connections"
     hard_limit = 25
     soft_limit = 20
-    type = "connections"
 
-  [[services.ports]]
-    force_https = true
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-
-  [services.http_checks]
+  [[services.http_checks]]
     interval = "30s"
+    timeout = "1s"
     grace_period = "5s"
+    restart_limit = 0
     method = "get"
     path = "/health"
     protocol = "http"
-    restart_limit = 0
-    timeout = 1000
-    tls_skip_verify = false
