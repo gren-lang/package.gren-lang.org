@@ -38,6 +38,7 @@ export function render(ctx, typeMap) {
 }
 
 export const root = compileTemplate("root");
+export const feed = compileTemplate("feed");
 export const packageSync = compileTemplate("package_sync");
 export const packageJobs = compileTemplate("package_jobs");
 export const packageSearch = compileTemplate("package_search");

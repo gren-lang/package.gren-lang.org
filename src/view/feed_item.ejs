@@ -1,0 +1,9 @@
+<item>
+    <title><%= package.name %></title>
+    <link>https://packages.gren-lang.org/package/<%= package.name %></link>
+    <description>
+        <%= package.readme_html || package.summary %>
+    </description>
+    <pubDate><%= new Date(package.imported_epoch * 1000).toUTCString() %></pubDate>
+    <guid>https://packages.gren-lang.org/package/<%= package.name %></guid>
+ </item>

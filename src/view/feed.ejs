@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+   <channel>
+      <title>Gren Packages</title>
+      <link>https://packages.gren-lang.org/</link>
+      <description>Discover new Gren packages</description>
+      <language>en-us</language>
+      <atom:link href="https://packages.gren-lang.org/feed/rss" rel="self"  type="application/rss+xml"></atom:link>
+      
+      <%_ packages.forEach(function(package) { -%>
+        <%- include('/feed_item.ejs', { package }) -%>
+      <%_ }); -%>
+
+   </channel>
+</rss>

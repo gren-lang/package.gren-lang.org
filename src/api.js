@@ -9,6 +9,7 @@ import { rateLimit } from "#src/rate_limit";
 import { router as rootRouter } from "#routes/root";
 import { router as importRouter } from "#routes/import";
 import { router as packageRouter } from "#routes/package";
+import { router as feedRouter } from "#routes/feed";
 import * as views from "#src/views";
 import { defaultLogger } from "#src/log";
 
@@ -21,6 +22,7 @@ const router = new Router();
 router.use(rootRouter.routes());
 router.use(importRouter.routes());
 router.use(packageRouter.routes());
+router.use(feedRouter.routes());
 
 api.use(
   logger({
