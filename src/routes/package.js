@@ -192,10 +192,14 @@ async function prepareModuleDocumentation(moduleInfo) {
 async function moduleOverview(ctx, next) {
   const { author, project } = ctx.params;
   const packageName = packageNameFromCtx(ctx);
+
   let version = ctx.params.version;
   if (!version) {
     version = await dbPackage.latestVersion(packageName);
   }
+
+  const summary = await dbPackage.getSummary(packageName, version);
+
   const moduleName = ctx.params.module;
 
   const moduleInfo = await dbPackage.getModuleComment(
@@ -225,6 +229,7 @@ async function moduleOverview(ctx, next) {
         packageName: packageName,
         packageNameShort: packageName.split("/")[1],
         packageVersion: version,
+        packageSummary: summary,
         packageOverviewLink: router.url("package-overview", {
           author: author,
           project: project,
@@ -250,10 +255,13 @@ async function packageOverview(ctx, next) {
   const author = ctx.params.author;
   const project = ctx.params.project;
   const packageName = packageNameFromCtx(ctx);
+
   let version = ctx.params.version;
   if (!version) {
     version = await dbPackage.latestVersion(packageName);
   }
+
+  const summary = await dbPackage.getSummary(packageName, version);
 
   const readme = await dbPackage.getReadme(packageName, version);
 
@@ -279,6 +287,7 @@ async function packageOverview(ctx, next) {
         packageName: packageName,
         packageNameShort: packageName.split("/")[1],
         packageVersion: version,
+        packageSummary: summary,
         packageOverviewLink: router.url("package-overview", {
           author: author,
           project: project,
