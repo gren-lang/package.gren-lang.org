@@ -1,0 +1,9 @@
+<%_ if (block.type.length < 60) { -%>
+	<%= block.type -%>
+<%_ } else { -%>
+	<div>
+		<%_ block.formatTypeSignature(block.type).forEach(function(type) { -%>
+			<div class="indented"><%= type -%></div>
+		<%_ }); -%>
+	</div>
+<%_ } -%>

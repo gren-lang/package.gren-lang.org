@@ -5,6 +5,7 @@ import { default as MarkdownIt } from "markdown-it";
 import * as views from "#src/views";
 
 import * as dbPackage from "#db/package";
+import { splitTypeSignature } from "#utils/type_signature";
 
 export const router = new Router({
   prefix: "/package",
@@ -320,12 +321,16 @@ function Value(name, comment, type) {
   this.name = name;
   this.comment = markdown.render(comment);
   this.type = stripModulesFromTypes(type);
+
+  this.formatTypeSignature = splitTypeSignature.bind(this);
 }
 
 function Binop(name, comment, type) {
   this.name = name;
   this.comment = markdown.render(comment);
   this.type = stripModulesFromTypes(type);
+
+  this.formatTypeSignature = splitTypeSignature.bind(this);
 }
 
 function Union(name, comment, args, cases) {
@@ -346,6 +351,8 @@ function Alias(name, comment, args, type) {
   this.comment = markdown.render(comment);
   this.args = args;
   this.type = stripModulesFromTypes(type);
+
+  this.formatTypeSignature = splitTypeSignature.bind(this);
 }
 
 function stripModulesFromTypes(typeSignature) {
