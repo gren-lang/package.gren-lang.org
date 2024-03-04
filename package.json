@@ -19,10 +19,11 @@
   "imports": {
     "#src/*": "./src/*.js",
     "#db/*": "./src/db/*.js",
+    "#utils/*": "./src/utils/*.js",
     "#routes/*": "./src/routes/*.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "dev": "nodemon -e ejs,js,css ./src/app.js",
     "prettier": "prettier -w ."
   },
@@ -54,6 +55,7 @@
     "zulip-js": "^2.0.9"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "prettier": "3.0.0"
   }
