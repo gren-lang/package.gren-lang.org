@@ -7,7 +7,7 @@
         <div id="<%= block.name %>" class="block alias anchor">
             <span class="definition">
                 type alias <a href="#<%= block.name %>"><%= block.name %></a> <%= block.args.join(" ") %> =
-                <div class="indented"><%= block.type %></div>
+                <%- include('/type_signature.ejs', { block: block }) -%>
             </span>
             <span class="comment">
                 <%- block.comment %>
@@ -32,7 +32,8 @@
         <%_ if (block.constructor.name === 'Binop') { -%>
         <div id="<%= block.name %>" class="block binop anchor">
             <span class="definition">
-                <a href="#<%= block.name %>">(<%= block.name %>)</a> : <%= block.type %>
+                <a href="#<%= block.name %>">(<%= block.name %>)</a> :
+                <%- include('/type_signature.ejs', { block: block }) -%>
             </span>
             <span class="comment">
                 <%- block.comment %>
@@ -43,7 +44,8 @@
         <%_ if (block.constructor.name === 'Value') { -%>
         <div id="<%= block.name %>" class="block value anchor">
             <span class="definition">
-                <a href="#<%= block.name %>"><%= block.name %></a> : <%= block.type %>
+                <a href="#<%= block.name %>"><%= block.name %></a> :
+                <%- include('/type_signature.ejs', { block: block }) -%>
             </span>
             <span class="comment">
                 <%- block.comment %>
