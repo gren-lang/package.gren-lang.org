@@ -34,7 +34,7 @@
   },
   "homepage": "https://packages.gren-lang.org",
   "engines": {
-    "node": "18.*"
+    "node": "20.*"
   },
   "dependencies": {
     "@koa/router": "^12.0.0",
