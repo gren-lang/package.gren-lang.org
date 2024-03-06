@@ -384,7 +384,7 @@ LIMIT 1
     },
   );
 
-  return row.summary;
+  return row?.summary;
 }
 
 export async function getReadme(name, version) {
