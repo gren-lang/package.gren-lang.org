@@ -148,4 +148,18 @@ describe("splitTypeSignature", () => {
 
     expect(splitTypeSignature(input)).toStrictEqual(result);
   });
+
+  test("token with '_' should not skip formatting", () => {
+    const input =
+      "{ host : String, port_ : Int, env : Environment, model : appModel}";
+    const result = [
+      "{ host : String",
+      ", port_ : Int",
+      ", env : Environment",
+      ", model : appModel",
+      "}",
+    ];
+
+    expect(splitTypeSignature(input)).toStrictEqual(result);
+  });
 });
