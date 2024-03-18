@@ -20,7 +20,7 @@
             <span class="definition">
                 type <a href="#<%= block.name %>"><%= block.name %></a> <%= block.args.join(" ") %>
                 <%_ block.cases.forEach(function(c, idx) { -%>
-                <div class="indented"><%= idx === 0 ? '=' : '|' %> <%= c -%></div>
+                <div class="indented"><%= idx === 0 ? '=' : ' |' %> <%= c -%></div>
                 <%_ }) -%>
             </span>
             <span class="comment">
