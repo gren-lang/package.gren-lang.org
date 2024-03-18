@@ -56,7 +56,9 @@ function lex(input) {
     } else if (WHITESPACES.includes(char)) {
       // skip whitespaces
     } else {
-      throw new Error(`Invalid Character found "${char}" at ${cursor + 1}`);
+      throw new Error(
+        `Invalid Character found "${char}" at ${cursor + 1} ("${input}")`,
+      );
     }
     cursor = cursor + cursorInc;
   }
