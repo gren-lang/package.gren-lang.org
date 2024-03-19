@@ -341,9 +341,16 @@ function Union(name, comment, args, cases) {
 }
 
 function formatCases(cases) {
-  return cases.map((c) =>
-    [c[0], stripModulesFromTypes(c[1].join(" "))].join(" "),
-  );
+  return cases.map((c) => {
+    const types = c[1].map((type) => {
+      if (type.includes(" ")) {
+        return `(${type})`;
+      }
+      return type;
+    });
+
+    return [c[0], stripModulesFromTypes(types.join(" "))].join(" ");
+  });
 }
 
 function Alias(name, comment, args, type) {
