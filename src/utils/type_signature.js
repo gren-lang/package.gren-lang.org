@@ -20,6 +20,8 @@ const SIG_SYNTAX = [
   CLOSE_BRACKETS,
 ];
 
+const allowedChars = new RegExp(/[a-z\._]/, "i");
+
 function lex(input) {
   let cursor = 0;
   let tokens = [];
@@ -30,7 +32,7 @@ function lex(input) {
     let cursorInc = 1;
     if (SIG_SYNTAX.includes(char)) {
       tokens = tokens.concat(char);
-    } else if (char.match(/[a-z\.]/i)) {
+    } else if (char.match(allowedChars)) {
       let innerCursor = 0;
       let innerChar = char;
       let str = "";
@@ -38,7 +40,7 @@ function lex(input) {
         str = str + innerChar;
         innerCursor = innerCursor + 1;
         innerChar = input[cursor + innerCursor];
-        if (!innerChar || !innerChar.match(/[a-z\.]/i)) {
+        if (!innerChar || !innerChar.match(allowedChars)) {
           break;
         }
       }
@@ -54,7 +56,9 @@ function lex(input) {
     } else if (WHITESPACES.includes(char)) {
       // skip whitespaces
     } else {
-      throw new Error(`Invalid Character found "${char}" at ${cursor + 1}`);
+      throw new Error(
+        `Invalid Character found "${char}" at ${cursor + 1} ("${input}")`,
+      );
     }
     cursor = cursor + cursorInc;
   }
