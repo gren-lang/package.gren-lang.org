@@ -6,6 +6,9 @@ services:
     region: frankfurt
     branch: main
     healthCheckPath: /health
+
+    domains:
+      - "packages.gren-lang.org"
     
     disk:
       name: packages_db
