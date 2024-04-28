@@ -1,8 +1,4 @@
-import * as process from "process";
 import { default as winston } from "winston";
-import { default as DatadogTransport } from "datadog-winston";
-
-import * as config from "#src/config";
 
 export const defaultLogger = winston.createLogger({
   level: "info",
@@ -11,24 +7,11 @@ export const defaultLogger = winston.createLogger({
   transports: [],
 });
 
-if (process.env.NODE_ENV !== "production") {
-  defaultLogger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  );
-} else {
-  defaultLogger.add(
-    new DatadogTransport({
-      apiKey: config.datadog.apiKey,
-      hostname: config.canonicalUrl,
-      service: "packages",
-      ddsource: "nodejs",
-      ddtags: "env:prod",
-      intakeRegion: "eu",
-    }),
-  );
-}
+defaultLogger.add(
+  new winston.transports.Console({
+    format: winston.format.simple(),
+  }),
+);
 
 export function info(msg, data) {
   const logger = data ? createChildLogger(defaultLogger, data) : defaultLogger;
