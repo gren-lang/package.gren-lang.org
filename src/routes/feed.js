@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import pikchrPkg from "markdown-it-pikchr";
+import markdownItMermaid from '@markslides/markdown-it-mermaid';
 import { default as MarkdownIt } from "markdown-it";
 
 import * as views from "#src/views";
@@ -10,7 +10,7 @@ export const router = new Router({
   prefix: "/feed",
 });
 
-const markdown = new MarkdownIt().use(pikchrPkg.default);
+const markdown = new MarkdownIt().use(markdownItMermaid);
 
 router.get("recent-feed", "/rss", recentPackages);
 
