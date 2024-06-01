@@ -651,12 +651,13 @@ LIMIT 25
 export function getLatestPackages() {
   return db.query(
     `
-SELECT package_id, summary, version, readme_id, v.imported_epoch, p.name, p.url, t.text
+SELECT package_id, summary, version, readme_id, v.imported_epoch, p.name, p.url, t.text,
+  max(v.major_version) as major, max(v.minor_version) as minor, max(v.patch_version) as patch
 FROM package_version v
 JOIN package p ON v.package_id = p.id
 JOIN package_big_text t ON v.readme_id = t.id
 GROUP BY package_id
-ORDER BY p.id DESC;
+ORDER BY p.id DESC, major DESC, minor DESC, patch DESC
 LIMIT 25
   `,
     {},
