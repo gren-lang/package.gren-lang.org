@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@koa/router": "^12.0.0",
+    "@markslides/markdown-it-mermaid": "^0.3.2",
     "ejs": "^3.1.8",
     "gren-compiler-library": "0.3.0",
     "koa": "^2.13.4",
@@ -46,7 +47,6 @@
     "koa-static": "^5.0.0",
     "koa2-winston": "^3.1.1",
     "markdown-it": "13.0.1",
-    "markdown-it-pikchr": "^0.0.2",
     "semver": "^7.3.8",
     "sqlite3": "^5.1.2",
     "winston": "^3.8.2",
