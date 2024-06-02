@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import markdownItMermaid from '@markslides/markdown-it-mermaid';
+import markdownItMermaid from "@markslides/markdown-it-mermaid";
 import { default as MarkdownIt } from "markdown-it";
 
 import * as views from "#src/views";
