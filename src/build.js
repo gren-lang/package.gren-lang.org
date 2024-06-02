@@ -58,7 +58,7 @@ export async function persistToDB(job, { readme, metadata, modules }) {
       );
     } catch (err) {
       // 19: SQLITE_CONSTRAINT, means row already exists
-      if (error.errno === 19) {
+      if (err.errno === 19) {
         throw new Error("VERSION_EXISTS");
       } else {
         throw err;
