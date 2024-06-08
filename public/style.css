@@ -92,6 +92,10 @@ main > .content {
   padding-bottom: 3rem;
 }
 
+main > .content:has(#module-docs) {
+  display: flex;
+}
+
 main > .content .inline_form {
   display: flex;
 }
@@ -127,8 +131,7 @@ main > .content ul.package-list > li > .package-version {
 }
 
 main > .content > #module-docs {
-  display: inline-block;
-  max-width: 65rem;
+  flex-basis: 70rem;
 }
 
 main > .content > #module-docs h1 {
@@ -170,7 +173,6 @@ main > .content > #module-docs > .block .comment p {
 }
 
 main > .content > #package-links {
-  display: inline-block;
   max-width: 22rem;
   vertical-align: top;
   padding-left: 3rem;
@@ -190,13 +192,15 @@ main > .content > #package-links ul {
 }
 
 @media only screen and (max-width: 60rem) {
+  main > .content:has(#module-docs) {
+    flex-direction: column;
+  }
+
   main > .content > #module-docs {
-    display: block;
-    max-width: 100%;
+    flex-basis: auto;
   }
 
   main > .content > #package-links {
-    display: block;
     max-width: 100%;
     vertical-align: top;
     padding-left: 0;
