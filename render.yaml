@@ -9,24 +9,24 @@ services:
 
     domains:
       - "packages.gren-lang.org"
-    
+
     disk:
       name: packages_db
       mountPath: /var/data
       sizeGB: 2
-    
+
     envVars:
       - key: GREN_CANONICAL_URL
         value: "https://packages.gren-lang.org"
-      
+
       - key: GREN_PACKAGES_DATABASE
         value: "/var/data/db.sqlite"
-      
+
       - key: GREN_ZULIP_REALM
         value: "https://gren.zulipchat.com"
-      
+
       - key: GREN_ZULIP_USERNAME
         value: "packages-bot@gren.zulipchat.com"
-      
+
       - key: NODE_ENV
         value: "production"
