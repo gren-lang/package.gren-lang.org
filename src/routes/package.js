@@ -13,12 +13,38 @@ export const router = new Router({
 
 const markdown = new MarkdownIt().use(markdownItMermaid);
 
-router.get("search", "/search", async (ctx, next) => {
+router.get("search", "/search", async (ctx, _next) => {
+  const query = ctx.request.query.query;
+  const results = await dbPackage.searchForPackage(query);
+
+  if (results.length === 1 && results[0].name === query) {
+    const [author, project] = results[0].name.split("/");
+
+    ctx.status = 303;
+    ctx.redirect(
+      router.url("package-overview", {
+        author: author,
+        project: project,
+        version: results[0].version,
+      }),
+    );
+
+    return;
+  }
+
+  views.render(ctx, {
+    html: () => views.packageSearch({ query, results }),
+    json: () => results,
+    text: () => results.join("\n"),
+  });
+});
+
+router.get("terse_search", "/search/terse", async (ctx, _next) => {
   const query = ctx.request.query.query;
   const results = await dbPackage.searchForPackage(query);
 
   views.render(ctx, {
-    html: () => views.packageSearch({ query, results }),
+    html: () => views.tersePackageSearch({ query, results }),
     json: () => results,
     text: () => results.join("\n"),
   });

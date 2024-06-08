@@ -1,8 +1,22 @@
 <%- include('/header.ejs', { title: 'Gren Packages', description: null, sideButtonType: 'IMPORT' }) -%>
     <form class="inline_form" action="/package/search" method="get">
-        <input id="query" name="query" placeholder="Search for package" type="search" autofocus />
+        <input
+            id="query"
+            name="query"
+            type="search"
+            list="terse_search_results"
+            placeholder="Search for package"
+            autofocus
+            hx-get="/package/search/terse"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#terse_search_results"
+            hx-swap="outerHTML"
+        />
+        
         <button type="submit">Search</button>
     </form>
+
+    <%- include('/package_datalist.ejs', { results: [] }) -%>
 
     <h3>Core packages</h3>
     <%- include('/package_list.ejs', { packages: corePackages }) -%>

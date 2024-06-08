@@ -42,6 +42,7 @@ export const feed = compileTemplate("feed");
 export const packageSync = compileTemplate("package_sync");
 export const packageJobs = compileTemplate("package_jobs");
 export const packageSearch = compileTemplate("package_search");
+export const tersePackageSearch = compileTemplate("package_datalist");
 export const packageOverview = compileTemplate("package_overview");
 export const packageVersions = compileTemplate("package_versions");
 export const packageModule = compileTemplate("package_module");
