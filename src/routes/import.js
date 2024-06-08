@@ -5,10 +5,8 @@ import { default as semver } from "semver";
 import { xdgCache } from "xdg-basedir";
 import * as path from "path";
 import * as fs from "fs/promises";
-import * as gren from "gren-compiler-library";
 
 import * as log from "#src/log";
-import * as db from "#src/db";
 import * as views from "#src/views";
 import * as zulip from "#src/zulip";
 import * as build from "#src/build";
@@ -22,7 +20,7 @@ export const router = new Router({
 
 const execFile = util.promisify(childProcess.execFile);
 
-router.get("list-jobs", "/jobs", async (ctx, next) => {
+router.get("list-jobs", "/jobs", async (ctx, _next) => {
   try {
     const rows = await dbPackageImportJob.getAllJobs();
 
@@ -37,7 +35,7 @@ router.get("list-jobs", "/jobs", async (ctx, next) => {
   }
 });
 
-router.get("init-job-ui", "/init", async (ctx, next) => {
+router.get("init-job-ui", "/init", async (ctx, _next) => {
   views.render(ctx, {
     html: views.packageSync,
     json: () => {
@@ -47,7 +45,7 @@ router.get("init-job-ui", "/init", async (ctx, next) => {
   });
 });
 
-router.post("init-job", "/init", async (ctx, next) => {
+router.post("init-job", "/init", async (ctx, _next) => {
   const packageName = ctx.request.body.packageName;
   const githubUrl = githubUrlForName(packageName);
 
@@ -136,7 +134,7 @@ async function findMissingVersions(job) {
       .trim()
       .split("\n")
       .map((entry) => entry.split("\t"))
-      .map(([hash, tag]) => tag.replace("refs/tags/", ""))
+      .map(([_hash, tag]) => tag.replace("refs/tags/", ""))
       .filter((tag) => semver.valid(tag))
       .filter((tag) => !alreadyImportedVersions.includes(tag));
 

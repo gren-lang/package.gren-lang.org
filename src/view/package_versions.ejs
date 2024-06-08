@@ -1,4 +1,4 @@
-<%- include('/header.ejs', { title: `${packageName} versions`, description: `All known versions of ${packageName}`, refresh: false, sideButtonType: 'NONE' }) -%>
+<%- include('/header.ejs', { title: `${packageName} versions`, description: `All known versions of ${packageName}`, sideButtonType: 'NONE' }) -%>
     <h3>Versions for <%= packageName %></h3>
     <ul>
         <%_ versions.forEach(function(version) { -%>

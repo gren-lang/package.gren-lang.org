@@ -1,7 +1,14 @@
-<%- include('/header.ejs', { title: 'Import Progress', description: null, refresh: 5, sideButtonType: 'NONE' }) -%>
+<%- include('/header.ejs', { title: 'Import Progress', description: null, sideButtonType: 'NONE' }) -%>
     <h1>Package import jobs</h1>
 
-    <table>
+    <table
+        id="job_table"
+        hx-trigger="every 5s"
+        hx-get=""
+        hx-select="#job_table"
+        hx-target="this"
+        hx-swap="outerHTML"
+    >
         <tr>
             <th>Name</th>
             <th>Version</th>
