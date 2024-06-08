@@ -8,7 +8,7 @@
             placeholder="Search for package"
             autofocus
             hx-get="/package/search/terse"
-            hx-trigger="keyup changed delay:500ms"
+            hx-trigger="keyup changed throttle:300ms"
             hx-target="#terse_search_results"
             hx-swap="outerHTML"
         />
