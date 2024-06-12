@@ -131,7 +131,7 @@ main > .content ul.package-list > li > .package-version {
 }
 
 main > .content > #module-docs {
-  flex-basis: 70rem;
+  width: 70rem;
 }
 
 main > .content > #module-docs h1 {
@@ -173,7 +173,7 @@ main > .content > #module-docs > .block .comment p {
 }
 
 main > .content > #package-links {
-  max-width: 22rem;
+  width: 22rem;
   vertical-align: top;
   padding-left: 3rem;
 }
@@ -197,11 +197,11 @@ main > .content > #package-links ul {
   }
 
   main > .content > #module-docs {
-    flex-basis: auto;
+    width: auto;
   }
 
   main > .content > #package-links {
-    max-width: 100%;
+    width: auto;
     vertical-align: top;
     padding-left: 0;
   }
