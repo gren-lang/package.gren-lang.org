@@ -5,14 +5,15 @@ import { default as semver } from "semver";
 import { xdgCache } from "xdg-basedir";
 import * as path from "path";
 import * as fs from "fs/promises";
+import axios from "axios";
 
 import * as log from "#src/log";
 import * as views from "#src/views";
-import * as zulip from "#src/zulip";
 import * as build from "#src/build";
 
 import * as dbPackageImportJob from "#db/package_import_job";
 import * as dbPackage from "#db/package";
+import * as config from "#src/config";
 
 export const router = new Router({
   prefix: "/import",
@@ -320,26 +321,32 @@ async function addToFTS(job) {
 
 async function notifyZulip(job) {
   try {
-    const summary = await dbPackage.getSummary(job.name, job.version);
+    if (config.discordWebhook) {
+      const summary = await dbPackage.getSummary(job.name, job.version);
 
-    const resp = await zulip.sendNewPackageNotification(
-      job.name,
-      job.version,
-      summary,
-    );
+      const payload = {
+        content: `
+  Version ${job.version} of ${job.name} is now available!
 
-    log.info(
-      `Response from Zulip for ${job.name} version ${job.version}`,
-      resp,
-    );
+  Summary: ${summary}
+  Link: ${config.canonicalUrl}/package/${job.name}/version/${job.version}/overview
+  `,
+      };
+
+      const resp = await axios.post(config.discordWebhook, payload);
+
+      log.info(
+        `Response from Discord for ${job.name} version ${job.version}: ${resp.status}`,
+      );
+    }
 
     await dbPackageImportJob.stopJob(job.id, "Done");
   } catch (error) {
-    log.error("Unknown error when notifying zulip", error);
+    log.error("Unknown error when notifying discord", error);
     await dbPackageImportJob.scheduleJobForRetry(
       job.id,
       job.retry,
-      "Unknown error when notifying zulip",
+      "Unknown error when notifying discord",
     );
   }
 }

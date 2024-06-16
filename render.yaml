@@ -22,11 +22,5 @@ services:
       - key: GREN_PACKAGES_DATABASE
         value: "/var/data/db.sqlite"
 
-      - key: GREN_ZULIP_REALM
-        value: "https://gren.zulipchat.com"
-
-      - key: GREN_ZULIP_USERNAME
-        value: "packages-bot@gren.zulipchat.com"
-
       - key: NODE_ENV
         value: "production"

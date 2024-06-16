@@ -7,8 +7,4 @@ export const canonicalUrl =
 
 export const dbPath = process.env["GREN_PACKAGES_DATABASE"] || ":memory:";
 
-export const zulip = {
-  username: process.env["GREN_ZULIP_USERNAME"],
-  apiKey: process.env["GREN_ZULIP_APIKEY"],
-  realm: process.env["GREN_ZULIP_REALM"],
-};
+export const discordWebhook = process.env["DISCORD_WEBHOOK"];
