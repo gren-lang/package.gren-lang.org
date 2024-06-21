@@ -1,5 +1,6 @@
 import http from "http";
 import process from "process";
+import * as gren from "gren-compiler-library";
 
 import * as db from "#src/db";
 import { api } from "#src/api";
@@ -10,6 +11,10 @@ import * as recurring from "#src/recurring_tasks";
 async function setup() {
   await db.init();
   await recurring.init();
+  
+  const versionOutput = await gren.execute(".", ["--version"], {});
+  console.log("Version of Gren compiler: ", versionOutput.stdout.trim());
+  
   setupServer();
 }
 

@@ -8,8 +8,6 @@ import * as db from "#src/db";
 import * as dbPackage from "#db/package";
 
 export async function buildDocs(job, localRepoPath, homeOverride) {
-  await gren.downloadCompiler();
-
   const env = !homeOverride
     ? process.env
     : {
