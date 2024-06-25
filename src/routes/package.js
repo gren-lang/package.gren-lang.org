@@ -112,6 +112,12 @@ router.get(
 );
 
 router.get(
+  "latest-package-version-overview",
+  "/:author/:project/version/latest/overview",
+  packageOverview,
+);
+
+router.get(
   "package-overview",
   "/:author/:project/version/:version/overview",
   packageOverview,
