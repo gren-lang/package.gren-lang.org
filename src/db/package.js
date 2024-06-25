@@ -368,6 +368,38 @@ LIMIT 1
   return row?.version;
 }
 
+// This function will return the latest version for a given prefix
+// on invalid versions it will return the same version it received.
+export async function resolveVersion(name, rawVersion) {
+  const versionParts = rawVersion.split(".");
+  if (versionParts.length >= 3 || versionParts.length === 0) {
+    console.log("returned");
+    return rawVersion;
+  }
+
+  if (versionParts.map((n) => parseInt(n)).some(isNaN)) {
+    return rawVersion;
+  }
+
+  const row = await db.queryOne(
+    `
+SELECT package_version.version
+FROM package_version
+JOIN package ON package.id = package_version.package_id
+WHERE package.name = $name
+AND package_version.version like $version_prefix
+ORDER BY major_version DESC, minor_version DESC, patch_version DESC
+LIMIT 1
+`,
+    {
+      $name: name,
+      $version_prefix: rawVersion + "%",
+    },
+  );
+
+  return row?.version;
+}
+
 export async function getSummary(name, version) {
   const row = await db.queryOne(
     `

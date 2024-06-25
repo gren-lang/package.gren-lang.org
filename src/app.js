@@ -11,10 +11,10 @@ import * as recurring from "#src/recurring_tasks";
 async function setup() {
   await db.init();
   await recurring.init();
-  
+
   const versionOutput = await gren.execute(".", ["--version"], {});
   console.log("Version of Gren compiler: ", versionOutput.stdout.trim());
-  
+
   setupServer();
 }
 

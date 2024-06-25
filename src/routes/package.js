@@ -159,6 +159,12 @@ function prepareModuleForView(author, project, version, moduleName) {
 }
 
 router.get(
+  "latest-package-module",
+  "/:author/:project/version/latest/module/:module",
+  moduleOverview,
+);
+
+router.get(
   "package-module",
   "/:author/:project/version/:version/module/:module",
   moduleOverview,
@@ -229,6 +235,8 @@ async function moduleOverview(ctx, next) {
   let version = ctx.params.version;
   if (!version) {
     version = await dbPackage.latestVersion(packageName);
+  } else {
+    version = await dbPackage.resolveVersion(packageName, version);
   }
 
   const summary = await dbPackage.getSummary(packageName, version);
@@ -292,6 +300,8 @@ async function packageOverview(ctx, next) {
   let version = ctx.params.version;
   if (!version) {
     version = await dbPackage.latestVersion(packageName);
+  } else {
+    version = await dbPackage.resolveVersion(packageName, version);
   }
 
   const summary = await dbPackage.getSummary(packageName, version);
