@@ -1,7 +1,7 @@
 import * as views from "#src/views";
 
-const maxTokens = 60;
-const tokenIncreaseEveryMs = 1000;
+const maxTokens = 1000;
+const tokenIncreaseEveryMs = 100;
 
 let availableTokens = maxTokens;
 
