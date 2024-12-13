@@ -1,6 +1,6 @@
 import http from "http";
 import process from "process";
-import * as gren from "gren-compiler-library";
+import * as gren from "gren-lang";
 
 import * as db from "#src/db";
 import { api } from "#src/api";
@@ -12,8 +12,8 @@ async function setup() {
   await db.init();
   await recurring.init();
 
-  const versionOutput = await gren.execute(".", ["--version"], {});
-  console.log("Version of Gren compiler: ", versionOutput.stdout.trim());
+  const versionOutput = await gren.version();
+  console.log("Version of Gren compiler:", versionOutput.trim());
 
   setupServer();
 }

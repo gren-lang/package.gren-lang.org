@@ -1,7 +1,7 @@
 import * as process from "process";
 import * as path from "path";
 import * as fs from "fs/promises";
-import * as gren from "gren-compiler-library";
+import * as gren from "gren-lang";
 
 import * as db from "#src/db";
 
