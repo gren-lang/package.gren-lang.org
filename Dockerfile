@@ -15,7 +15,7 @@ RUN devbox run -- echo "Installed Packages."
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm ci --omit=dev
+RUN devbox run -- npm ci --omit=dev
 
 # Copy code
 
@@ -23,4 +23,4 @@ COPY index.js .
 COPY src/ src/
 COPY public/ public/
 
-CMD [ "node", "index.js" ]
+CMD devbox run -- node index.js
