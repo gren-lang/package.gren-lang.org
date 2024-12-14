@@ -17,10 +17,13 @@ COPY package-lock.json .
 
 RUN devbox run -- npm ci --omit=dev
 
+# Make gren download haskell binary
+RUN devbox run -- npx gren version
+
 # Copy code
 
 COPY index.js .
 COPY src/ src/
 COPY public/ public/
 
-CMD devbox run -- node index.js
+CMD [ "devbox", "run", "--", "node", "index.js" ]
