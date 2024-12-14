@@ -18,7 +18,7 @@ COPY package-lock.json .
 RUN devbox run -- npm ci --omit=dev
 
 # Make gren download haskell binary
-RUN devbox run -- npx gren version
+RUN devbox run -- npx gren --version
 
 # Copy code
 
