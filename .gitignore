@@ -1,3 +1,4 @@
+.envrc
 node_modules/
 db.sqlite
 newrelic_agent.log
