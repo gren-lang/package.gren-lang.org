@@ -1,7 +1,9 @@
 <%- include('/header.ejs', { title: 'Import Package', description: null, sideButtonType: 'NONE' }) -%>
-    <form method="post" class="inline_form">
-        <input id="package_name" name="packageName" type="text" placeholder="author/project" autofocus />
-        <button type="submit">Import</button>
+    <form method="post" class="inline-form">
+        <fieldset>
+            <input id="package_name" name="packageName" type="text" placeholder="author/project" autofocus />
+            <button type="submit">Import</button>
+        </fieldset>
     </form>
 
     <p>Clicking <i>Import</i> will clone the project from Github and generate documentation for any semver-formatted tag we can find. This will also import new versions for previously imported packages.</p>

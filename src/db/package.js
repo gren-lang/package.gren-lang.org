@@ -609,6 +609,21 @@ LIMIT 10;
   );
 }
 
+export function getAllPackages() {
+  return db.query(
+    `
+SELECT package.name, v1.version, v1.summary
+FROM package_version v1
+JOIN package ON package.id = v1.package_id
+LEFT JOIN package_version v2
+    ON v1.package_id = v2.package_id
+    AND v1.version < v2.version
+WHERE v2.package_id IS NULL
+ORDER BY package.name;
+`,
+  );
+}
+
 // SEARCH
 
 export async function registerForSearch(name, version, summary) {

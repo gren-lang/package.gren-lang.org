@@ -1,13 +1,13 @@
 import Router from "@koa/router";
 
-import * as log from "#src/log";
+import "#src/log";
 import * as views from "#src/views";
 
 import * as packageDb from "#db/package";
 
 export const router = new Router();
 
-router.get("/", async (ctx, next) => {
+router.get("/", async (ctx, _next) => {
   const corePackages = await packageDb.getCorePackages();
   const recentlyUpdated = await packageDb.getRecentlyUpdatedPackages();
 
@@ -20,7 +20,7 @@ router.get("/", async (ctx, next) => {
   });
 });
 
-router.get("/health", async (ctx, next) => {
+router.get("/health", async (ctx, _next) => {
   views.render(ctx, {
     html: () => "OK",
     json: () => {

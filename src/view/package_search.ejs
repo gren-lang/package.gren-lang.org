@@ -1,21 +1,23 @@
 <%- include('/header.ejs', { title: 'Search', description: null, sideButtonType: 'NONE' }) -%>
 
-    <form class="inline_form" action="/package/search" method="get">
-        <input
-            id="query"
-            name="query"
-            type="search"
-            list="terse_search_results"
-            placeholder="Search for package"
-            autocomplete="off"
-            value="<%= query %>"
-            hx-get="/package/search/terse"
-            hx-trigger="keyup changed throttle:300ms"
-            hx-target="#terse_search_results"
-            hx-swap="outerHTML"
-        />
+    <form class="inline-form" action="/package/search" method="get">
+        <fieldset>
+            <input
+                id="query"
+                name="query"
+                type="search"
+                list="terse_search_results"
+                placeholder="Search for package"
+                autocomplete="off"
+                value="<%= query %>"
+                hx-get="/package/search/terse"
+                hx-trigger="keyup changed throttle:300ms"
+                hx-target="#terse_search_results"
+                hx-swap="outerHTML"
+            />
         
-        <button type="submit">Search</button>
+            <button type="submit">Search</button>
+        </fieldset>
     </form>
 
     <%- include('/package_datalist.ejs', { results: [] }) -%>

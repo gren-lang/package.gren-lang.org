@@ -1,0 +1,4 @@
+<%- include('/header.ejs', { title: 'Packages', description: null, sideButtonType: 'NONE' }) -%>
+    <h3>All packages</h3>
+    <%- include('/package_list.ejs', { packages: packages }) -%>
+<%- include('/footer.ejs') -%>

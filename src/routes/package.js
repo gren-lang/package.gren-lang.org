@@ -13,6 +13,18 @@ export const router = new Router({
 
 const markdown = new MarkdownIt().use(markdownItMermaid);
 
+router.get("/", async (ctx, _next) => {
+  const packages = await dbPackage.getAllPackages();
+
+  views.render(ctx, {
+    html: () => views.packageRoot({ packages }),
+    json: () => {
+      return { packages };
+    },
+    text: () => packages.map((p) => p.name).join("\n"),
+  });
+});
+
 router.get("search", "/search", async (ctx, _next) => {
   const query = ctx.request.query.query;
   const results = await dbPackage.searchForPackage(query);

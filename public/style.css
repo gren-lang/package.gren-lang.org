@@ -97,20 +97,28 @@ main > .content:has(#module-docs) {
   display: flex;
 }
 
-main > .content .inline_form {
+main > .content .inline-form fieldset {
   display: flex;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
-main > .content .inline_form > input {
+main > .content .inline-form fieldset input {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   border-right-color: transparent;
+  margin-bottom: 0;
 }
 
-main > .content .inline_form > button {
+main > .content .inline-form fieldset button {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-left-color: transparent;
+  margin-bottom: 0;
+}
+
+main > .content .inline-form footer {
+  margin-left: 0.3rem;
 }
 
 main > .content ul.package-list {
