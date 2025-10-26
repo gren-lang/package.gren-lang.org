@@ -3,6 +3,7 @@ import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import serve from "koa-static";
 import compress from "koa-compress";
+import conditionalGet from "koa-conditional-get";
 import { logger } from "koa2-winston";
 
 import { rateLimit } from "#src/rate_limit";
@@ -39,10 +40,10 @@ api.use(
 );
 
 api.use(rateLimit);
+api.use(conditionalGet());
 
 api.use(
   serve(__dirname + "../public", {
-    maxage: 3600 * 1000,
     index: null,
     gzip: false,
     brotli: false,
