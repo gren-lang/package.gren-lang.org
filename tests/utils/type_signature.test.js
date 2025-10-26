@@ -1,7 +1,9 @@
 import { splitTypeSignature } from "#utils/type_signature";
+import { describe, it } from "node:test";
+import assert from "node:assert";
 
 describe("splitTypeSignature", () => {
-  test("basic", () => {
+  it("basic", () => {
     const input =
       "{ init : model, view : model -> Html.Html msg, update : msg -> model -> model } -> Platform.Program {} model msg";
     const result = [
@@ -12,10 +14,10 @@ describe("splitTypeSignature", () => {
       "-> Platform.Program {} model msg",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("type2", () => {
+  it("type2", () => {
     const input =
       "{ init : flags -> Url -> Key -> { model : model, command : Cmd msg }, view : model -> Document msg, update : msg -> model -> { model : model, command : Cmd msg }, subscriptions : model -> Sub msg, onUrlRequest : UrlRequest -> msg, onUrlChange : Url -> msg } -> Program flags model msg";
     const result = [
@@ -29,10 +31,10 @@ describe("splitTypeSignature", () => {
       "-> Program flags model msg",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  xtest("nested record", () => {
+  it.skip("nested record", () => {
     const input = "";
     const result = [
       "{ scene :",
@@ -48,48 +50,48 @@ describe("splitTypeSignature", () => {
       "}",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("record", () => {
+  it("record", () => {
     const input = "{ title : String, body : Array (Html msg) }";
     const result = ["{ title : String", ", body : Array (Html msg)", "}"];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("decoder lazy", () => {
+  it("decoder lazy", () => {
     const input = "({} -> Decoder a) -> Decoder a";
     const result = ["({} -> Decoder a)", "-> Decoder a"];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  xtest("task sleep", () => {
+  it("task sleep", () => {
     const input = "Float -> Task x {}";
-    const result = ["Float -> Task x {}"];
+    const result = ["Float", "-> Task x {}"];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("decoder Object Primitives", () => {
+  it("decoder Object Primitives", () => {
     const input = "Array String -> Decoder a -> Decoder a ";
     const result = ["Array String", "-> Decoder a", "-> Decoder a"];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("decoder keyValuePairs", () => {
+  it("decoder keyValuePairs", () => {
     const input = "Decoder a -> Decoder (Array { key : String, value : a })";
     const result = [
       "Decoder a",
       "-> Decoder (Array { key : String, value : a })",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("comparable", () => {
+  it("comparable", () => {
     const input =
       "(comparable -> a -> result -> result) -> (comparable -> a -> b -> result -> result) -> (comparable -> b -> result -> result) -> Dict comparable a -> Dict comparable b -> result -> result";
     const result = [
@@ -102,10 +104,10 @@ describe("splitTypeSignature", () => {
       "-> result",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("record as second/third param", () => {
+  it("record as second/third param", () => {
     const input =
       "Permission -> String -> { recursive : Bool, key : String } -> Task AccessError {}";
     const result = [
@@ -115,10 +117,10 @@ describe("splitTypeSignature", () => {
       "-> Task AccessError {}",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("lambda as second/third param", () => {
+  it("lambda as second/third param", () => {
     const input =
       "state -> (state -> Parser c x ( Step state a)) -> Parser c x a";
     const result = [
@@ -127,10 +129,10 @@ describe("splitTypeSignature", () => {
       "-> Parser c x a",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("decoder map8", () => {
+  it("decoder map8", () => {
     const input =
       "(a -> b -> c -> d -> e -> f -> g -> h -> value) -> Decoder a -> Decoder b -> Decoder c -> Decoder d -> Decoder e -> Decoder f -> Decoder g -> Decoder h -> Decoder value";
     const result = [
@@ -146,10 +148,10 @@ describe("splitTypeSignature", () => {
       "-> Decoder value",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  test("token with '_' should not skip formatting", () => {
+  it("token with '_' should not skip formatting", () => {
     const input =
       "{ host : String, port_ : Int, env : Environment, model : appModel}";
     const result = [
@@ -160,6 +162,6 @@ describe("splitTypeSignature", () => {
       "}",
     ];
 
-    expect(splitTypeSignature(input)).toStrictEqual(result);
+    assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 });

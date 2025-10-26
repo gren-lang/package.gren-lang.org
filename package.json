@@ -22,11 +22,7 @@
     "#utils/*": "./src/utils/*.js",
     "#routes/*": "./src/routes/*.js"
   },
-  "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "dev": "nodemon -e ejs,js,css ./src/app.js",
-    "prettier": "prettier -w ."
-  },
+  "scripts": {},
   "author": "Robin Heggelund Hansen",
   "license": "BSD-3-Clause",
   "bugs": {
@@ -53,9 +49,5 @@
     "winston": "^3.8.2",
     "xdg-basedir": "^5.1.0"
   },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.0.2",
-    "prettier": "3.0.0"
-  }
+  "devDependencies": {}
 }

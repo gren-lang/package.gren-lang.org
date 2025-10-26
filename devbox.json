@@ -1,14 +1,12 @@
 {
-  "$schema":  "https://raw.githubusercontent.com/jetify-com/devbox/0.13.7/.schema/devbox.schema.json",
-  "packages": ["nodejs@20"],
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.7/.schema/devbox.schema.json",
+  "packages": ["nodejs@20", "nodePackages.prettier", "watchexec"],
   "shell": {
-    "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
-    ],
+    "init_hook": ["echo 'Welcome to devbox!' > /dev/null"],
     "scripts": {
-      "test": [
-        "echo \"Error: no test specified\" && exit 1"
-      ]
+      "test": "node --test tests",
+      "dev": "watchexec -r -e ejs,js,css -- node ./src/app.js",
+      "prettier": "prettier -w ."
     }
   }
 }
