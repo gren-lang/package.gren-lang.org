@@ -1,0 +1,38 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+failfast: true
+
+tasks:
+  install-node-deps:
+    desc: "Install required node dependencies"
+    sources:
+      - package.json
+      - package-lock.lock
+    cmd: npm ci
+
+  test:
+    desc: "Run unit tests"
+    deps:
+      - install-node-deps
+    cmd: node --test tests/**/*.js
+
+  dev:
+    desc: "Start application and reload on source changes"
+    aliases:
+      - default
+    deps:
+      - install-node-deps
+    sources:
+      - "**/*.js"
+      - "**/*.ejs"
+      - "**/*.css"
+    cmd: node ./src/app.js
+
+  format:
+    desc: "Format source code"
+    cmds:
+      - prettier -w .
+      - nixfmt *.nix

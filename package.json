@@ -29,9 +29,6 @@
     "url": "https://github.com/gren-lang/package.gren-lang.org/issues"
   },
   "homepage": "https://packages.gren-lang.org",
-  "engines": {
-    "node": "20.*"
-  },
   "dependencies": {
     "@koa/router": "^12.0.0",
     "@markslides/markdown-it-mermaid": "^0.3.2",
