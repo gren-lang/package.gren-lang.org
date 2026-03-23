@@ -3,6 +3,7 @@
 node_modules/
 db.sqlite
 newrelic_agent.log
+result
 
 # Mac stuff
 .DS_Store

@@ -14,6 +14,7 @@
   ],
   "main": "index.js",
   "bin": {
+    "gren-package-server": "index.js",
     "gren-doc-preview": "bin/gren-doc-preview.js"
   },
   "imports": {
