@@ -3,7 +3,9 @@ let
   nixpkgs = import sources.nixpkgs { };
   pkgJson = builtins.fromJSON (builtins.readFile ./package.json);
 in
-{ pkgs ? nixpkgs }:
+{
+  pkgs ? nixpkgs,
+}:
 pkgs.buildNpmPackage {
   pname = "package.gren-lang.org";
   version = pkgJson.version;

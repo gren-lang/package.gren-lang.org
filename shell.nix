@@ -4,7 +4,6 @@ let
 in
 pkgs.mkShellNoCC {
   packages = with pkgs; [
-    npins
     nodejs
     nixfmt
     nodePackages.prettier
