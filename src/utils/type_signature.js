@@ -20,7 +20,7 @@ const SIG_SYNTAX = [
   CLOSE_BRACKETS,
 ];
 
-const allowedChars = new RegExp(/[a-z\._]/, "i");
+const allowedChars = new RegExp(/[a-z0-9\._]/, "i");
 
 function lex(input) {
   let cursor = 0;
@@ -168,7 +168,7 @@ function formatAsArray(inputTokens) {
   tokens = tokens.map((line) => {
     return line
       .replace("{ }", "{}")
-      .replace(" , ", ", ")
+      .replace(/\s*,\s*/g, ", ")
       .replace("} )", "})")
       .replace("( {", "({")
       .replace(") )", "))")
@@ -183,10 +183,14 @@ function formatAsArray(inputTokens) {
   return tokens.filter((token) => Boolean(token));
 }
 
-export function splitTypeSignature(strType) {
+export function splitTypeSignature(strType, throwErr) {
   try {
     return formatAsArray(lex(strType));
   } catch (err) {
+    if (throwErr) {
+      throw err;
+    }
+
     console.error(err);
     return [strType];
   }

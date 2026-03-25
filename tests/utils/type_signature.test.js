@@ -1,6 +1,8 @@
-import { splitTypeSignature } from "#utils/type_signature";
+import * as impl from "#utils/type_signature";
 import { describe, it } from "node:test";
 import assert from "node:assert";
+
+const splitTypeSignature = (inp) => impl.splitTypeSignature(inp, true);
 
 describe("splitTypeSignature", () => {
   it("basic", () => {
@@ -34,19 +36,12 @@ describe("splitTypeSignature", () => {
     assert.deepStrictEqual(splitTypeSignature(input), result);
   });
 
-  it.skip("nested record", () => {
-    const input = "";
+  it("nested record", () => {
+    const input =
+      "{ scene : { width : Float, height : Float }, viewport : { x : Float, y : Float, width : Float, height : Float } }";
     const result = [
-      "{ scene :",
-      "    { width : Float",
-      "    , height : Float",
-      "    }",
-      ", viewport :",
-      "    { x : Float",
-      "    , y : Float",
-      "    , width : Float",
-      "    , height : Float",
-      "    }",
+      "{ scene : { width : Float, height : Float }",
+      ", viewport : { x : Float, y : Float, width : Float, height : Float }",
       "}",
     ];
 
@@ -70,6 +65,13 @@ describe("splitTypeSignature", () => {
   it("task sleep", () => {
     const input = "Float -> Task x {}";
     const result = ["Float", "-> Task x {}"];
+
+    assert.deepStrictEqual(splitTypeSignature(input), result);
+  });
+
+  it("numbers", () => {
+    const input = "Float -> Task x1 {}";
+    const result = ["Float", "-> Task x1 {}"];
 
     assert.deepStrictEqual(splitTypeSignature(input), result);
   });
