@@ -17,6 +17,9 @@ tasks:
     desc: "Run unit tests"
     deps:
       - install-node-deps
+    sources:
+      - "src/**/*.js"
+      - "tests/**/*.js"
     cmd: node --test tests/**/*.js
 
   dev:
@@ -26,9 +29,10 @@ tasks:
     deps:
       - install-node-deps
     sources:
-      - "**/*.js"
-      - "**/*.ejs"
-      - "**/*.css"
+      - "src/**/*.js"
+      - "src/**/*.ejs"
+      - "src/**/*.css"
+    method: none
     cmd: node ./src/app.js
 
   format:
