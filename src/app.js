@@ -13,7 +13,7 @@ async function setup() {
   await recurring.init();
 
   const versionOutput = await gren.version();
-  console.log("Version of Gren compiler:", versionOutput.trim());
+  log.info("Gren compiler is present", { version: versionOutput.trim() });
 
   setupServer();
 }
@@ -25,7 +25,10 @@ function setupServer() {
   server.setTimeout(5000);
 
   server.listen(port, () => {
-    log.info(`Server running on port ${port} using node ${process.version}`);
+    log.info("Server running", {
+      port: port,
+      nodeVersion: process.version
+    });
   });
 
   process.on("SIGINT", onTerminate);
@@ -50,9 +53,9 @@ function onTerminate() {
 
     db.close((err) => {
       if (err != null) {
-        log.error(`Failed to close database: ${err}`);
+        log.error(`Failed to close database`, err);
       } else {
-        log.info("Closed database");
+        log.info("Database closed");
       }
 
       process.exit(0);

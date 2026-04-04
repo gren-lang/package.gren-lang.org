@@ -11,11 +11,13 @@ sqlite3.verbose();
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err != null) {
-    log.error(`Failed to open database ${dbPath} with error: ${err}`);
+    log.error(`Failed to open database at ${dbPath}`, err);
     process.exit(1);
   }
 
-  log.info(`Opened database ${dbPath}`);
+  log.info("Database opened", {
+    path: dbPath
+  });
 });
 
 export async function init() {
@@ -34,7 +36,7 @@ PRAGMA foreign_keys = on;
       await run(migration);
     }
   } catch (err) {
-    log.error(`Failed to initialize database ${dbPath} with error ${err}`);
+    log.error(`Failed to initialize database at ${dbPath}`, err);
     process.exit(1);
   }
 }

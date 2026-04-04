@@ -2,17 +2,15 @@ import Koa from "koa";
 import Router from "@koa/router";
 import bodyParser from "koa-bodyparser";
 import serve from "koa-static";
-import compress from "koa-compress";
 import conditionalGet from "koa-conditional-get";
-import { logger } from "koa2-winston";
 
 import { rateLimit } from "#src/rate_limit";
 import { router as rootRouter } from "#routes/root";
 import { router as importRouter } from "#routes/import";
 import { router as packageRouter } from "#routes/package";
 import { router as feedRouter } from "#routes/feed";
+import * as log from "#src/log";
 import * as views from "#src/views";
-import { defaultLogger } from "#src/log";
 
 import * as url from "url";
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
@@ -25,25 +23,24 @@ router.use(importRouter.routes());
 router.use(packageRouter.routes());
 router.use(feedRouter.routes());
 
-api.use(
-  logger({
-    reqKeys: ["url", "method", "query"],
-    resKeys: ["header", "status"],
-    transports: defaultLogger.transports,
-  }),
-);
+api.use(async (ctx, next) => {
+  const start = performance.now();
+  await next();
+  const end = Math.floor(performance.now() - start);
 
-api.use(
-  compress({
-    threshold: 2048,
-  }),
-);
+  log.info(`${ctx.method} ${ctx.url}`, {
+    durationMs: end,
+    responseCode: ctx.response.status,
+    responseHeader: ctx.response.header
+  });
+});
 
 api.use(rateLimit);
 api.use(conditionalGet());
 
 api.use(
   serve(__dirname + "../public", {
+    maxage: 600 * 1000,
     index: null,
     gzip: false,
     brotli: false,

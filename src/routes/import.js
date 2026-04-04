@@ -5,7 +5,6 @@ import { default as semver } from "semver";
 import { xdgCache } from "xdg-basedir";
 import * as path from "path";
 import * as fs from "fs/promises";
-import axios from "axios";
 
 import * as log from "#src/log";
 import * as views from "#src/views";
@@ -333,7 +332,14 @@ async function notifyZulip(job) {
   `,
       };
 
-      const resp = await axios.post(config.discordWebhook, payload);
+      const resp = await fetch(config.discordWebhook, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
       log.info(
         `Response from Discord for ${job.name} version ${job.version}: ${resp.status}`,

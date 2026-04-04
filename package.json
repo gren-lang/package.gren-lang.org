@@ -31,21 +31,17 @@
   },
   "homepage": "https://packages.gren-lang.org",
   "dependencies": {
-    "@koa/router": "^12.0.0",
-    "@markslides/markdown-it-mermaid": "^0.3.2",
-    "axios": "^1.7.2",
-    "ejs": "^3.1.8",
+    "ejs": "^5.0.1",
     "gren-lang": "^0.6.5",
-    "koa": "^2.13.4",
+    "koa": "^3.2.0",
     "koa-bodyparser": "^4.3.0",
-    "koa-compress": "^5.1.0",
-    "koa-conditional-get": "github:koajs/conditional-get",
+    "koa-conditional-get": "^3.0.0",
     "koa-static": "^5.0.0",
-    "koa2-winston": "^3.1.1",
-    "markdown-it": "13.0.1",
+    "@koa/router": "^15.4.0",
+    "markdown-it": "14.1.1",
+    "@markslides/markdown-it-mermaid": "^0.4.6",
     "semver": "^7.3.8",
-    "sqlite3": "^5.1.2",
-    "winston": "^3.8.2",
+    "sqlite3": "^6.0.1",
     "xdg-basedir": "^5.1.0"
   }
 }

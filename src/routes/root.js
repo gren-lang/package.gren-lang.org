@@ -1,8 +1,6 @@
 import Router from "@koa/router";
 
-import "#src/log";
 import * as views from "#src/views";
-
 import * as packageDb from "#db/package";
 
 export const router = new Router();

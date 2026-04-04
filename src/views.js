@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as ejs from "ejs";
+import ejs from "ejs";
 
 const viewRootDir = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),

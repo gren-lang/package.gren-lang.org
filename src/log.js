@@ -1,35 +1,24 @@
-import { default as winston } from "winston";
-
-export const defaultLogger = winston.createLogger({
-  level: "info",
-  format: winston.format.json(),
-  defaultMeta: {},
-  transports: [],
-});
-
-defaultLogger.add(
-  new winston.transports.Console({
-    format: winston.format.simple(),
-  }),
-);
-
 export function info(msg, data) {
-  const logger = data ? createChildLogger(defaultLogger, data) : defaultLogger;
-  logger.info(msg);
+  console.log(JSON.stringify({
+    level: "INFO",
+    message: msg,
+    data: typeof data === "undefined" ? {} : data
+  }));
 }
 
 export function error(msg, data) {
-  const logger = data ? createChildLogger(defaultLogger, data) : defaultLogger;
-  logger.error(msg);
-}
+  const toLog = {
+    level: "ERROR",
+    message: msg,
+    data: typeof data === "undefined" ? {} : data
+  };
 
-function createChildLogger(logger, data) {
   if (data instanceof Error) {
-    data = {
+    toLog.data = {
       errorMessage: data.message,
-      stacktrace: data.stack,
+      stacktrace: data.stack
     };
   }
 
-  return logger.child(data);
+  console.error(JSON.stringify(toLog));
 }
