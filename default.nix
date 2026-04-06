@@ -10,8 +10,7 @@ pkgs.buildNpmPackage {
   pname = "package.gren-lang.org";
   version = pkgJson.version;
   src = ./.;
-  npmDepsHash = "sha256-d7VLxiqru2lqKcAQ8km321SrY4Siea/HA7GeWlt+Y8o=";
-  makeCacheWritable = true; # to work around npm bug
+  npmDepsHash = "sha256-ZoeJ76fhEB394T2tQYfGEqtPZQBc7aJMUvhF00K7k70=";
   dontNpmBuild = true;
 
   meta = {
