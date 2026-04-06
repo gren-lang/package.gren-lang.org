@@ -27,7 +27,7 @@ function setupServer() {
   server.listen(port, () => {
     log.info("Server running", {
       port: port,
-      nodeVersion: process.version
+      nodeVersion: process.version,
     });
   });
 

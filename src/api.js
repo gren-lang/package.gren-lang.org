@@ -31,7 +31,7 @@ api.use(async (ctx, next) => {
   log.info(`${ctx.method} ${ctx.url}`, {
     durationMs: end,
     responseCode: ctx.response.status,
-    responseHeader: ctx.response.header
+    responseHeader: ctx.response.header,
   });
 });
 

@@ -333,12 +333,12 @@ async function notifyZulip(job) {
       };
 
       const resp = await fetch(config.discordWebhook, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       log.info(

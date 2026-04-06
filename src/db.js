@@ -16,7 +16,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 
   log.info("Database opened", {
-    path: dbPath
+    path: dbPath,
   });
 });
 
