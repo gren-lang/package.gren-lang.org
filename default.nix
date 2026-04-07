@@ -12,6 +12,7 @@ pkgs.buildNpmPackage {
   src = ./.;
   npmDepsHash = "sha256-ZoeJ76fhEB394T2tQYfGEqtPZQBc7aJMUvhF00K7k70=";
   dontNpmBuild = true;
+  buildInputs = [ pkgs.git ];
 
   meta = {
     description = "Package and documentation registry for Gren applications";

@@ -23,7 +23,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 export async function init() {
   try {
     await run(`
-PRAGMA busy_timeout = 2000;
+PRAGMA journal_mode = wal;
+PRAGMA wal_autocheckpoint = 0;
+PRAGMA synchronous = NORMAL;
+PRAGMA busy_timeout = 5000;
 PRAGMA foreign_keys = on;
 `);
 
