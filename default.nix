@@ -12,7 +12,15 @@ pkgs.buildNpmPackage {
   src = ./.;
   npmDepsHash = "sha256-ZoeJ76fhEB394T2tQYfGEqtPZQBc7aJMUvhF00K7k70=";
   dontNpmBuild = true;
-  buildInputs = [ pkgs.git ];
+  buildInputs = [ pkgs.makeBinaryWrapper ];
+
+  fixupPhase = ''
+    runHook preFixup
+
+    wrapProgram $out/bin/gren-package-server --suffix PATH : ${pkgs.lib.makeBinPath [ pkgs.git ]}
+    
+    runHook postFixup
+  '';
 
   meta = {
     description = "Package and documentation registry for Gren applications";
