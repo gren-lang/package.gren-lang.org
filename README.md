@@ -20,6 +20,7 @@ By default, the packaging site will run on port 3000 and the documentation will 
 - `GREN_PACKAGES_DATABASE` sets a path where a sqlite database containing the documentation will be stored.
 - `GREN_CANONICAL_URL` used for making urls
 - `DISCORD_WEBHOOK` used to notify the discord community of new packages
+- `JSON_LOG_INGEST_URL` url to service that takes logs in jsonl format. If not provided, logs will be written to stdout.
 
 ## Development
 

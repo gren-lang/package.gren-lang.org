@@ -8,3 +8,5 @@ export const canonicalUrl =
 export const dbPath = process.env["GREN_PACKAGES_DATABASE"] || ":memory:";
 
 export const discordWebhook = process.env["DISCORD_WEBHOOK"];
+
+export const jsonLogIngestUrl = process.env["JSON_LOG_INGEST_URL"];
