@@ -29,6 +29,9 @@ api.use(async (ctx, next) => {
   const end = Math.floor(performance.now() - start);
 
   log.info(`${ctx.method} ${ctx.url}`, {
+    method: ctx.method,
+    url: ctx.url,
+    route: ctx._matchedRoute,
     durationMs: end,
     responseCode: ctx.response.status,
     responseHeader: ctx.response.header,

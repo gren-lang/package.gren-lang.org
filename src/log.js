@@ -15,24 +15,27 @@ async function jsonStreamExporter(data) {
 
   jsonStreamInProgress = true;
 
-  const payload = jsonStreamList
-    .map(d => JSON.stringify({ log: d, timestamp: Date.now(), app: "gren-packages" }))
-    .join("\n");
+  while (jsonStreamList.length > 0) {
+    const payload = jsonStreamList
+      .map((d) =>
+        JSON.stringify({ log: d, timestamp: Date.now(), app: "gren-packages" }),
+      )
+      .join("\n");
 
-  jsonStreamList = [];
+    jsonStreamList = [];
 
-  await fetch(config.jsonLogIngestUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/stream+json",
-    },
-    cache: "no-cache",
-    body: payload,
-  })
+    await fetch(config.jsonLogIngestUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/stream+json",
+      },
+      cache: "no-cache",
+      body: payload,
+    });
+  }
 
   jsonStreamInProgress = false;
 }
-
 
 const exporter = config.jsonLogIngestUrl ? jsonStreamExporter : consoleExporter;
 
@@ -40,10 +43,10 @@ export function info(msg, data) {
   const details = typeof data === "undefined" ? {} : data;
 
   exporter({
-      level: "info",
-      message: msg,
-      ...details 
-    });
+    level: "info",
+    message: msg,
+    ...details,
+  });
 }
 
 export function error(msg, data) {
@@ -61,7 +64,7 @@ export function error(msg, data) {
   const toLog = {
     level: "error",
     message: msg,
-    ...details
+    ...details,
   };
 
   exporter(toLog);

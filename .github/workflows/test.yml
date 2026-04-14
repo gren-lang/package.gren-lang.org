@@ -13,4 +13,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - run: nix-build
-      - run: "nix-shell --run \"task test\""
+      - run: 'nix-shell --run "task test"'

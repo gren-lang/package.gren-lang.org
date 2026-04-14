@@ -373,7 +373,6 @@ LIMIT 1
 export async function resolveVersion(name, rawVersion) {
   const versionParts = rawVersion.split(".");
   if (versionParts.length >= 3 || versionParts.length === 0) {
-    console.log("returned");
     return rawVersion;
   }
 

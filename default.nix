@@ -18,7 +18,7 @@ pkgs.buildNpmPackage {
     runHook preFixup
 
     wrapProgram $out/bin/gren-package-server --suffix PATH : ${pkgs.lib.makeBinPath [ pkgs.git ]}
-    
+
     runHook postFixup
   '';
 
