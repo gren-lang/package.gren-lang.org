@@ -320,30 +320,40 @@ async function addToFTS(job) {
 
 async function notifyZulip(job) {
   try {
+    const localRepoPath = getLocalRepoPath(job);
+    const changelogPath = path.join(localRepoPath, "CHANGELOG.md");
+    const docsUrl = `${config.canonicalUrl}/package/${job.name}/version/${job.version}/overview`;
+    let changelogUrl = "";
+
+    try {
+      await fs.access(changelogPath);
+      changelogUrl = `https://github.com/${job.name}/tree/${job.version}/CHANGELOG.md`;
+    } catch {
+      // CHANGELOG.md doesn't exist
+    }
+
+    const message = `
+[${job.name}](${docsUrl}) version ${job.version} is now available! 🎉 ${changelogUrl ? `([Changelog](${changelogUrl}))` : ""}
+`.trim();
+
     if (config.discordWebhook) {
-      const summary = await dbPackage.getSummary(job.name, job.version);
-
-      const payload = {
-        content: `
-  Version ${job.version} of ${job.name} is now available!
-
-  Summary: ${summary}
-  Link: ${config.canonicalUrl}/package/${job.name}/version/${job.version}/overview
-  `,
-      };
-
       const resp = await fetch(config.discordWebhook, {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          content: message,
+          flags: 4, // suppress embeds
+        }),
       });
 
       log.info(
         `Response from Discord for ${job.name} version ${job.version}: ${resp.status}`,
       );
+    } else {
+      log.info(message);
     }
 
     await dbPackageImportJob.stopJob(job.id, "Done");

@@ -1,4 +1,5 @@
 .envrc
+.direnv/
 .task/
 node_modules/
 db.sqlite
