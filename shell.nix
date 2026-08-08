@@ -6,7 +6,8 @@ pkgs.mkShellNoCC {
   packages = with pkgs; [
     nodejs
     nixfmt
-    nodePackages.prettier
+    npins
+    prettier
     go-task
   ];
 
