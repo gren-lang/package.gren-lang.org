@@ -1,7 +1,7 @@
 {
   "name": "gren-packages",
   "type": "module",
-  "version": "6.0.3",
+  "version": "6.0.4",
   "description": "The server powering package.gren-lang.org",
   "keywords": [
     "gren",
@@ -32,7 +32,7 @@
   "homepage": "https://packages.gren-lang.org",
   "dependencies": {
     "ejs": "^5.0.1",
-    "gren-lang": "^0.6.5",
+    "gren-lang": "^0.6.6",
     "koa": "^3.2.0",
     "koa-bodyparser": "^4.3.0",
     "koa-conditional-get": "^3.0.0",
@@ -43,5 +43,8 @@
     "semver": "^7.3.8",
     "sqlite3": "^6.0.1",
     "xdg-basedir": "^5.1.0"
+  },
+  "allowScripts": {
+    "sqlite3@6.0.1": true
   }
 }

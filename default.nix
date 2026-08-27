@@ -9,9 +9,15 @@ in
 pkgs.buildNpmPackage {
   pname = "package.gren-lang.org";
   version = pkgJson.version;
+
   src = ./.;
-  npmDepsHash = "sha256-ZoeJ76fhEB394T2tQYfGEqtPZQBc7aJMUvhF00K7k70=";
+  npmDepsHash = "sha256-PoW/07qqJTzUzJgHJi1CmA9dxn07OKsAIcPgF/MS5wM=";
+
+  strictDeps = true;
+  __structuredAttrs = true;
+
   dontNpmBuild = true;
+
   buildInputs = [ pkgs.makeBinaryWrapper ];
 
   fixupPhase = ''

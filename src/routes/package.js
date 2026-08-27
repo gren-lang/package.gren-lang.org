@@ -27,6 +27,13 @@ router.get("/", async (ctx, _next) => {
 
 router.get("search", "/search", async (ctx, _next) => {
   const query = ctx.request.query.query;
+
+  if (query.trim() === "") {
+    ctx.status = 303;
+    ctx.redirect("/");
+    return;
+  }
+
   const results = await dbPackage.searchForPackage(query);
 
   if (results.length === 1 && results[0].name === query) {
